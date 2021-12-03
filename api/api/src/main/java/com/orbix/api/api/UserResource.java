@@ -68,10 +68,11 @@ public class UserResource {
 	
 	
 	@PostMapping("/users/save")
-	public ResponseEntity<User>saveUser(
+	public User saveUser(
 			@RequestBody User user){
-		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/users/save").toUriString());
-		return ResponseEntity.created(uri).body(userService.saveUser(user));
+		return userService.saveUser(user);
+		//URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/users/save").toUriString());
+		//return ResponseEntity.created(uri).body(userService.saveUser(user));
 	}
 	
 	@PostMapping("/roles/save")
@@ -128,6 +129,11 @@ public class UserResource {
 		}else {
 			 throw new RuntimeException("Refresh token is missing");
 		}
+	}
+	
+	@GetMapping("/roles")
+	public ResponseEntity<List<Role>>getRoles(){
+		return ResponseEntity.ok().body(userService.getRoles());
 	}
 }
 

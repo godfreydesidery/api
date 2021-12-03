@@ -110,5 +110,11 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 		}catch(Exception e) {
 			log.info(e.getMessage());
 		}			
+	}
+
+	@Override
+	public List<Role> getRoles() {
+		log.info("Fetching all roles");
+		return roleRepository.findAll();
 	}	
 }

@@ -68,10 +68,17 @@ protected ConfigurableApplicationContext springContext;
 		return args -> {
 			dayService.saveDay(new Day());
 			
-			userService.saveRole(new Role(null, "ROLE_USER", null));
-			userService.saveRole(new Role(null, "ROLE_MANAGER", null));
-			userService.saveRole(new Role(null, "ROLE_ADMIN", null));
-			userService.saveRole(new Role(null, "ROLE_SUPER_ADMIN", null));
+			userService.saveRole(new Role(null, "USER", null));
+			userService.saveRole(new Role(null, "GENERAL MANAGER", null));
+			userService.saveRole(new Role(null, "ADMIN", null));
+			userService.saveRole(new Role(null, "SUPER ADMIN", null));
+			userService.saveRole(new Role(null, "ASSISTANT MANAGER", null));
+			userService.saveRole(new Role(null, "SENIOR ACCOUNTANT", null));
+			userService.saveRole(new Role(null, "ACCOUNTANT", null));
+			userService.saveRole(new Role(null, "PROCUREMENT", null));
+			userService.saveRole(new Role(null, "SALES MANAGER", null));
+			userService.saveRole(new Role(null, "ASSISTANT SALES MANAGER", null));
+			userService.saveRole(new Role(null, "PUBLIC RELATIONS MANAGER", null));
 			
 			userService.savePrivilege(new Privilege(null, "CREATE"));
 			userService.savePrivilege(new Privilege(null, "READ"));
@@ -83,30 +90,30 @@ protected ConfigurableApplicationContext springContext;
 			userService.saveUser(new User(null, "username3", "password", null, null, "3333", "Clemence", "Desidery", "Shirima", "Clemence Shirima", 1, new ArrayList<>()));
 			userService.saveUser(new User(null, "username4", "password", null, null, "4444", "Grasiana", "Desidery", "Shirima", "Grasiana Shirima", 1, new ArrayList<>()));
 			
-			userService.addRoleToUser("username", "ROLE_USER");
-			userService.addRoleToUser("username", "ROLE_MANAGER");
-			userService.addRoleToUser("username", "ROLE_SUPER_ADMIN");
-			userService.addRoleToUser("username1", "ROLE_USER");
-			userService.addRoleToUser("username1", "ROLE_MANAGER");
-			userService.addRoleToUser("username2", "ROLE_USER");
-			userService.addRoleToUser("username3", "ROLE_USER");
+			userService.addRoleToUser("username", "USER");
+			userService.addRoleToUser("username", "GENERAL MANAGER");
+			userService.addRoleToUser("username", "SUPER ADMIN");
+			userService.addRoleToUser("username1", "USER");
+			userService.addRoleToUser("username1", "ASSISTANT MANAGER");
+			userService.addRoleToUser("username2", "USER");
+			userService.addRoleToUser("username3", "USER");
 			
-			userService.addPrivilegeToRole("ROLE_USER", "CREATE");
-			userService.addPrivilegeToRole("ROLE_USER", "READ");
-			userService.addPrivilegeToRole("ROLE_USER", "UPDATE");
-			userService.addPrivilegeToRole("ROLE_USER", "DELETE");
-			userService.addPrivilegeToRole("ROLE_MANAGER", "CREATE");
-			userService.addPrivilegeToRole("ROLE_MANAGER", "READ");
-			userService.addPrivilegeToRole("ROLE_MANAGER", "UPDATE");
-			userService.addPrivilegeToRole("ROLE_MANAGER", "DELETE");
-			userService.addPrivilegeToRole("ROLE_ADMIN", "CREATE");
-			userService.addPrivilegeToRole("ROLE_ADMIN", "READ");
-			userService.addPrivilegeToRole("ROLE_ADMIN", "UPDATE");
-			userService.addPrivilegeToRole("ROLE_ADMIN", "DELETE");
-			userService.addPrivilegeToRole("ROLE_SUPER_ADMIN", "CREATE");
-			userService.addPrivilegeToRole("ROLE_SUPER_ADMIN", "READ");
-			userService.addPrivilegeToRole("ROLE_SUPER_ADMIN", "UPDATE");
-			userService.addPrivilegeToRole("ROLE_SUPER_ADMIN", "DELETE");
+			userService.addPrivilegeToRole("USER", "CREATE");
+			userService.addPrivilegeToRole("USER", "READ");
+			userService.addPrivilegeToRole("USER", "UPDATE");
+			userService.addPrivilegeToRole("USER", "DELETE");
+			userService.addPrivilegeToRole("GENERAL MANAGER", "CREATE");
+			userService.addPrivilegeToRole("GENERAL MANAGER", "READ");
+			userService.addPrivilegeToRole("GENERAL MANAGER", "UPDATE");
+			userService.addPrivilegeToRole("GENERAL MANAGER", "DELETE");
+			userService.addPrivilegeToRole("GENERAL MANAGER", "CREATE");
+			userService.addPrivilegeToRole("GENERAL MANAGER", "READ");
+			userService.addPrivilegeToRole("GENERAL MANAGER", "UPDATE");
+			userService.addPrivilegeToRole("GENERAL MANAGER", "DELETE");
+			userService.addPrivilegeToRole("SUPER ADMIN", "CREATE");
+			userService.addPrivilegeToRole("SUPER ADMIN", "READ");
+			userService.addPrivilegeToRole("SUPER ADMIN", "UPDATE");
+			userService.addPrivilegeToRole("SUPER ADMIN", "DELETE");
 		};
 	}
 	

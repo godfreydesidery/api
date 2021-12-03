@@ -21,4 +21,5 @@ public interface UserService {
 	User getUser(String username);
 	List<User>getUsers(); //edit this to limit the number, for perfomance.
 	void addPrivilegeToRole(String roleName, String privilegeName);
+	List<Role>getRoles(); // return all the roles
 }
