@@ -56,7 +56,7 @@ public class User {
 	@NotBlank
 	@Column(unique = true)
 	private String alias;
-	private int active = 1;
+	private boolean active = true;
 	
 //    private boolean accountVerified;
 //    private int failedLoginAttempts;

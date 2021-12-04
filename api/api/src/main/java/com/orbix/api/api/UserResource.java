@@ -18,8 +18,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -67,12 +69,26 @@ public class UserResource {
 	}
 	
 	
-	@PostMapping("/users/save")
-	public User saveUser(
+	@PostMapping("/users/create")
+	public ResponseEntity<User>createUser(
 			@RequestBody User user){
-		return userService.saveUser(user);
-		//URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/users/save").toUriString());
-		//return ResponseEntity.created(uri).body(userService.saveUser(user));
+		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/users/create").toUriString());
+		return ResponseEntity.created(uri).body(userService.saveUser(user));
+	}
+	
+	@PutMapping("/users/update")
+	public ResponseEntity<User>updateUser(
+			@RequestBody User user){
+		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/users/update").toUriString());
+		return ResponseEntity.created(uri).body(userService.saveUser(user));
+	}
+	
+	@DeleteMapping("/users/delete")
+	public ResponseEntity<Boolean> deleteUser(
+			@RequestParam(name = "id") Long id){
+		User user = userService.getUserById(id);
+		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/users/delete").toUriString());
+		return ResponseEntity.created(uri).body(userService.deleteUser(user));
 	}
 	
 	@PostMapping("/roles/save")
@@ -104,7 +120,7 @@ public class UserResource {
 				User user = userService.getUser(username);
 				String access_token = JWT.create()
 						.withSubject(user.getUsername())
-						.withExpiresAt(new Date(System.currentTimeMillis()+10*60*1000))
+						.withExpiresAt(new Date(System.currentTimeMillis()+8*60*60*1000))
 						.withIssuer(request.getRequestURI().toString())
 						.withClaim("roles", user.getRoles().stream().map(Role::getName).collect(Collectors.toList()))
 						.sign(algorithm);

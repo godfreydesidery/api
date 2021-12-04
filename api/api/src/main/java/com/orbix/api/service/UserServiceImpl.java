@@ -116,5 +116,16 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 	public List<Role> getRoles() {
 		log.info("Fetching all roles");
 		return roleRepository.findAll();
+	}
+
+	@Override
+	public User getUserById(Long id) {
+		return userRepository.findById(id).get();
+	}
+
+	@Override
+	public boolean deleteUser(User user) {
+		userRepository.delete(user);
+		return true;
 	}	
 }

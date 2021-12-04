@@ -19,6 +19,8 @@ public interface UserService {
 	Privilege savePrivilege(Privilege privilege);
 	void addRoleToUser(String username, String roleName);
 	User getUser(String username);
+	User getUserById(Long id);
+	boolean deleteUser(User user);
 	List<User>getUsers(); //edit this to limit the number, for perfomance.
 	void addPrivilegeToRole(String roleName, String privilegeName);
 	List<Role>getRoles(); // return all the roles

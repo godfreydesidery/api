@@ -85,10 +85,10 @@ protected ConfigurableApplicationContext springContext;
 			userService.savePrivilege(new Privilege(null, "UPDATE"));
 			userService.savePrivilege(new Privilege(null, "DELETE"));
 			
-			userService.saveUser(new User(null, "username1", "password", null, null, "1111", "Godfrey", "Desidery", "Shirima", "Godfrey Shirima", 1, new ArrayList<>()));
-			userService.saveUser(new User(null, "username2", "password", null, null, "2222", "Mary", "Augustino", "Michael", "Mary Michael", 1, new ArrayList<>()));
-			userService.saveUser(new User(null, "username3", "password", null, null, "3333", "Clemence", "Desidery", "Shirima", "Clemence Shirima", 1, new ArrayList<>()));
-			userService.saveUser(new User(null, "username4", "password", null, null, "4444", "Grasiana", "Desidery", "Shirima", "Grasiana Shirima", 1, new ArrayList<>()));
+			userService.saveUser(new User(null, "username1", "password", null, null, "1111", "Godfrey", "Desidery", "Shirima", "Godfrey Shirima", true, new ArrayList<>()));
+			userService.saveUser(new User(null, "username2", "password", null, null, "2222", "Mary", "Augustino", "Michael", "Mary Michael", true, new ArrayList<>()));
+			userService.saveUser(new User(null, "username3", "password", null, null, "3333", "Clemence", "Desidery", "Shirima", "Clemence Shirima", true, new ArrayList<>()));
+			userService.saveUser(new User(null, "username4", "password", null, null, "4444", "Grasiana", "Desidery", "Shirima", "Grasiana Shirima", true, new ArrayList<>()));
 			
 			userService.addRoleToUser("username", "USER");
 			userService.addRoleToUser("username", "GENERAL MANAGER");
