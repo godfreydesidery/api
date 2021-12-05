@@ -3,8 +3,12 @@
  */
 package com.orbix.api.service;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -23,6 +27,8 @@ import com.orbix.api.exceptions.NotFoundException;
 import com.orbix.api.repositories.PrivilegeRepository;
 import com.orbix.api.repositories.RoleRepository;
 import com.orbix.api.repositories.UserRepository;
+import com.orbix.api.security.Object_;
+import com.orbix.api.security.Operation;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -127,5 +133,57 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 	public boolean deleteUser(User user) {
 		userRepository.delete(user);
 		return true;
+	}
+
+	@Override
+	public Role getRole(String name) {
+		return roleRepository.findByName(name);
+	}
+
+	@Override
+	public List<String> getOperations() {
+		List<String> operations = new ArrayList<String>();
+		for(Field field : Operation.class.getDeclaredFields()) {
+			int modifiers = field.getModifiers();
+			if(Modifier.isStatic(modifiers)) {
+				String value = "";
+				try {
+					value = Operation.class.getDeclaredField(field.getName()).get(null).toString();
+				} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException
+						| SecurityException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				if(!value.equals("")) {
+					operations.add(value);
+				}			
+			}
+		}
+		return operations;
+	}
+
+	@Override
+	public List<String> getObjects() {
+		List<String> objects = new ArrayList<String>();
+		for(Field field : Object_.class.getDeclaredFields()) {
+			int modifiers = field.getModifiers();
+			if(Modifier.isStatic(modifiers)) {
+				String value = "";
+				try {
+					value = Object_.class.getDeclaredField(field.getName()).get(null).toString();
+				} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException
+						| SecurityException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				if(!value.equals("")) {
+					objects.add(value);
+				}			
+			}
+		}
+		List<String> subList = objects.subList(0, objects.size());
+		Collections.sort(subList);
+		return subList;
+		//return objects;
 	}	
 }

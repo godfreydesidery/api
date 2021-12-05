@@ -37,6 +37,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.orbix.api.domain.Role;
 import com.orbix.api.domain.User;
+import com.orbix.api.security.Operation;
 import com.orbix.api.service.UserService;
 
 import lombok.AllArgsConstructor;
@@ -91,10 +92,23 @@ public class UserResource {
 		return ResponseEntity.created(uri).body(userService.deleteUser(user));
 	}
 	
-	@PostMapping("/roles/save")
+	@GetMapping("/roles/get_role")
+	public ResponseEntity<Role> getRole(
+			@RequestParam(name = "name") String name){
+		return ResponseEntity.ok().body(userService.getRole(name));
+	}
+	
+	@PostMapping("/roles/create")
 	public ResponseEntity<Role>saveRole(
 			@RequestBody Role role){
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/roles/save").toUriString());
+		return ResponseEntity.created(uri).body(userService.saveRole(role));
+	}
+	
+	@PutMapping("/roles/update")
+	public ResponseEntity<Role>updateRole(
+			@RequestBody Role role){
+		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/roles/update").toUriString());
 		return ResponseEntity.created(uri).body(userService.saveRole(role));
 	}
 
@@ -150,6 +164,16 @@ public class UserResource {
 	@GetMapping("/roles")
 	public ResponseEntity<List<Role>>getRoles(){
 		return ResponseEntity.ok().body(userService.getRoles());
+	}
+	
+	@GetMapping("/operations")
+	public ResponseEntity<List<String>>getOperations(){
+		return ResponseEntity.ok().body(userService.getOperations());
+	}
+	
+	@GetMapping("/objects")
+	public ResponseEntity<List<String>>getObjects(){
+		return ResponseEntity.ok().body(userService.getObjects());
 	}
 }
 
