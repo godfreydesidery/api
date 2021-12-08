@@ -1,6 +1,8 @@
 package com.orbix.api;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.TimeZone;
 
 import javax.annotation.PostConstruct;
@@ -27,6 +29,8 @@ import com.orbix.api.domain.Privilege;
 import com.orbix.api.domain.Role;
 import com.orbix.api.domain.User;
 import com.orbix.api.repositories.DayRepository;
+import com.orbix.api.security.Object_;
+import com.orbix.api.security.Operation;
 import com.orbix.api.service.DayService;
 import com.orbix.api.service.UserService;
 
@@ -68,52 +72,25 @@ protected ConfigurableApplicationContext springContext;
 		return args -> {
 			dayService.saveDay(new Day());
 			
-			userService.saveRole(new Role(null, "USER", null));
-			userService.saveRole(new Role(null, "GENERAL MANAGER", null));
-			userService.saveRole(new Role(null, "ADMIN", null));
-			userService.saveRole(new Role(null, "SUPER ADMIN", null));
-			userService.saveRole(new Role(null, "ASSISTANT MANAGER", null));
-			userService.saveRole(new Role(null, "SENIOR ACCOUNTANT", null));
-			userService.saveRole(new Role(null, "ACCOUNTANT", null));
-			userService.saveRole(new Role(null, "PROCUREMENT", null));
-			userService.saveRole(new Role(null, "SALES MANAGER", null));
-			userService.saveRole(new Role(null, "ASSISTANT SALES MANAGER", null));
-			userService.saveRole(new Role(null, "PUBLIC RELATIONS MANAGER", null));
+			userService.saveRole(new Role(null, "SUPER USER", null));
+						
+			userService.saveUser(new User(null, "superuser", "superuser", null, null, "1111", "Godfrey", "Desidery", "Shirima", "Godfrey Shirima", true, new ArrayList<>()));
 			
-			userService.savePrivilege(new Privilege(null, "CREATE"));
-			userService.savePrivilege(new Privilege(null, "READ"));
-			userService.savePrivilege(new Privilege(null, "UPDATE"));
-			userService.savePrivilege(new Privilege(null, "DELETE"));
-			
-			userService.saveUser(new User(null, "username1", "password", null, null, "1111", "Godfrey", "Desidery", "Shirima", "Godfrey Shirima", true, new ArrayList<>()));
-			userService.saveUser(new User(null, "username2", "password", null, null, "2222", "Mary", "Augustino", "Michael", "Mary Michael", true, new ArrayList<>()));
-			userService.saveUser(new User(null, "username3", "password", null, null, "3333", "Clemence", "Desidery", "Shirima", "Clemence Shirima", true, new ArrayList<>()));
-			userService.saveUser(new User(null, "username4", "password", null, null, "4444", "Grasiana", "Desidery", "Shirima", "Grasiana Shirima", true, new ArrayList<>()));
-			
-			userService.addRoleToUser("username", "USER");
-			userService.addRoleToUser("username", "GENERAL MANAGER");
-			userService.addRoleToUser("username", "SUPER ADMIN");
-			userService.addRoleToUser("username1", "USER");
-			userService.addRoleToUser("username1", "ASSISTANT MANAGER");
-			userService.addRoleToUser("username2", "USER");
-			userService.addRoleToUser("username3", "USER");
-			
-			userService.addPrivilegeToRole("USER", "CREATE");
-			userService.addPrivilegeToRole("USER", "READ");
-			userService.addPrivilegeToRole("USER", "UPDATE");
-			userService.addPrivilegeToRole("USER", "DELETE");
-			userService.addPrivilegeToRole("GENERAL MANAGER", "CREATE");
-			userService.addPrivilegeToRole("GENERAL MANAGER", "READ");
-			userService.addPrivilegeToRole("GENERAL MANAGER", "UPDATE");
-			userService.addPrivilegeToRole("GENERAL MANAGER", "DELETE");
-			userService.addPrivilegeToRole("GENERAL MANAGER", "CREATE");
-			userService.addPrivilegeToRole("GENERAL MANAGER", "READ");
-			userService.addPrivilegeToRole("GENERAL MANAGER", "UPDATE");
-			userService.addPrivilegeToRole("GENERAL MANAGER", "DELETE");
-			userService.addPrivilegeToRole("SUPER ADMIN", "CREATE");
-			userService.addPrivilegeToRole("SUPER ADMIN", "READ");
-			userService.addPrivilegeToRole("SUPER ADMIN", "UPDATE");
-			userService.addPrivilegeToRole("SUPER ADMIN", "DELETE");
+			userService.addRoleToUser("superuser", "SUPER USER");
+						
+			Field[] objectFields = Object_.class.getDeclaredFields();
+			Field[] operationFields = Operation.class.getDeclaredFields();
+			for(int i = 0; i < objectFields.length; i++) {
+				for(int j = 0; j < operationFields.length; j++) {
+					Privilege privilege = new Privilege();
+					privilege.setName(objectFields[i].getName()+"-"+operationFields[j].getName());
+					try {
+						userService.savePrivilege(privilege);
+					}catch(Exception e) {
+						System.out.println("Could not save privilege");
+					}
+				}
+			}
 		};
 	}
 	
@@ -122,8 +99,4 @@ protected ConfigurableApplicationContext springContext;
       return new Docket(DocumentationType.SWAGGER_2).select()
          .apis(RequestHandlerSelectors.basePackage("com.orbix.api")).build();
    }
-	
-	 
-
-	    
 }

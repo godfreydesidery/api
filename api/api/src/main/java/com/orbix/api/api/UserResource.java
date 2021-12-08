@@ -5,6 +5,7 @@ package com.orbix.api.api;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -35,8 +36,10 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.orbix.api.domain.Privilege;
 import com.orbix.api.domain.Role;
 import com.orbix.api.domain.User;
+import com.orbix.api.exceptions.InvalidOperationException;
 import com.orbix.api.security.Operation;
 import com.orbix.api.service.UserService;
 
@@ -101,6 +104,9 @@ public class UserResource {
 	@PostMapping("/roles/create")
 	public ResponseEntity<Role>saveRole(
 			@RequestBody Role role){
+		if(role.getName().equalsIgnoreCase("SUPER USER")) {
+			throw new InvalidOperationException("Role name not available for use");
+		}
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/roles/save").toUriString());
 		return ResponseEntity.created(uri).body(userService.saveRole(role));
 	}
@@ -108,6 +114,10 @@ public class UserResource {
 	@PutMapping("/roles/update")
 	public ResponseEntity<Role>updateRole(
 			@RequestBody Role role){
+		Role roleToUpdate = userService.getRoleById(role.getId());		
+		if(roleToUpdate.getName().equalsIgnoreCase("SUPER USER")) {
+			throw new InvalidOperationException("Role name not available for use");
+		}
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/roles/update").toUriString());
 		return ResponseEntity.created(uri).body(userService.saveRole(role));
 	}
@@ -175,12 +185,63 @@ public class UserResource {
 	public ResponseEntity<List<String>>getObjects(){
 		return ResponseEntity.ok().body(userService.getObjects());
 	}
+	
+	@GetMapping("/privileges")
+	public ResponseEntity<List<PrivilegeModel>>getPrivileges(
+			@RequestParam(name = "role") String roleName){
+		List<String> privileges = userService.getPrivileges(roleName);
+		List<PrivilegeModel> modelList = new ArrayList<PrivilegeModel>();
+		for(String privilege : privileges) {
+			PrivilegeModel model = new PrivilegeModel();
+			int posH = privilege.indexOf("-");
+			model.setObject(privilege.substring(0, posH));
+			model.setOperation(privilege.substring(posH + 1));
+			modelList.add(model);
+		}		
+		return ResponseEntity.ok().body(modelList);
+	}
+	
+	@PostMapping("/privileges/addtorole")
+	public boolean addPrivilegeToRole(
+			@RequestBody AccessModel form){	
+		for(ObjectModel model : form.getPrivileges()) {
+			String object = model.getObject();
+			for(String operation : model.getOperations()) {
+				userService.addPrivilegeToRole(form.getRole(), object+"-"+operation);
+			}
+		}
+		return true;
+	}
 }
-
+ 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 class RoleToUserForm{
 	private String username;
 	private String roleName;	
+}
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+class PrivilegeModel{
+	private String object;
+	private String operation;	
+}
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+class AccessModel{
+	String role;
+	ObjectModel[] privileges; 
+}
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+class ObjectModel{
+	String object;
+	String[] operations;
 }

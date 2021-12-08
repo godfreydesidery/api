@@ -111,8 +111,17 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 	public void addPrivilegeToRole(String roleName, String privilegeName) {
 		Role role = roleRepository.findByName(roleName);
 		Privilege privilege = privilegeRepository.findByName(privilegeName);
+		for(int i = 0; i < 100; i++) {
+			System.out.println(i);
+		}
+		System.out.println(roleName);
+		System.out.println(role.getName());
+		System.out.println(privilege.getName());
+		
 		try {
-			role.getPrivileges().add(privilege);	
+			role.getPrivileges().add(privilege);
+			System.out.println(role.getName());
+			System.out.println(privilege.getName());
 		}catch(Exception e) {
 			log.info(e.getMessage());
 		}			
@@ -185,5 +194,22 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 		Collections.sort(subList);
 		return subList;
 		//return objects;
-	}	
+	}
+
+	@Override
+	public List<String> getPrivileges(String roleName) {
+		Collection<Privilege> privileges = roleRepository.findByName(roleName).getPrivileges();
+		List<String> privilegesList = new ArrayList<String>();
+		for(Privilege privilege : privileges) {
+			privilegesList.add(privilege.getName());
+		}
+		return privilegesList;
+	}
+
+	@Override
+	public Role getRoleById(Long id) {
+		return roleRepository.findById(id).get();
+	}
+
+		
 }
