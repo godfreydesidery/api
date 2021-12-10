@@ -68,8 +68,16 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 	
 	@Override
 	public User saveUser(User user) {
-		log.info("Saving new user to the database");
-		user.setPassword(passwordEncoder.encode(user.getPassword()));
+		log.info("Saving user to the database");
+		if(user.getId() == null) {
+			user.setPassword(passwordEncoder.encode(user.getPassword()));
+		}else {
+			User userToUpdate = userRepository.findById(user.getId()).get();
+			if(user.getPassword().equals("") || user.getPassword().equals(null)) {
+				user.setPassword(userToUpdate.getPassword());
+			}			
+		}
+		
 		return userRepository.save(user);
 	}
 
@@ -211,5 +219,10 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 		return roleRepository.findById(id).get();
 	}
 
-		
+	@Override
+	public boolean deleteRole(Role role) {
+		roleRepository.delete(role);
+		return true;
+	}
+	
 }

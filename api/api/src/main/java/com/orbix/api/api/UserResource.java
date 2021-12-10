@@ -76,6 +76,9 @@ public class UserResource {
 	@PostMapping("/users/create")
 	public ResponseEntity<User>createUser(
 			@RequestBody User user){
+		if(user.getUsername().equals("superuser")) {
+			throw new InvalidOperationException("Username not available");
+		}
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/users/create").toUriString());
 		return ResponseEntity.created(uri).body(userService.saveUser(user));
 	}
@@ -83,6 +86,10 @@ public class UserResource {
 	@PutMapping("/users/update")
 	public ResponseEntity<User>updateUser(
 			@RequestBody User user){
+		User userToUpdate = userService.getUserById(user.getId());
+		if(!userToUpdate.getUsername().equalsIgnoreCase(user.getUsername())) {
+			throw new InvalidOperationException("Updating the SUPER USER profile is not allowed");
+		}
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/users/update").toUriString());
 		return ResponseEntity.created(uri).body(userService.saveUser(user));
 	}
@@ -91,6 +98,9 @@ public class UserResource {
 	public ResponseEntity<Boolean> deleteUser(
 			@RequestParam(name = "id") Long id){
 		User user = userService.getUserById(id);
+		if(user.getUsername().equalsIgnoreCase("superuser")) {
+			throw new InvalidOperationException("Deleting the SUPER USER profile is not allowed");
+		}
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/users/delete").toUriString());
 		return ResponseEntity.created(uri).body(userService.deleteUser(user));
 	}
@@ -105,7 +115,7 @@ public class UserResource {
 	public ResponseEntity<Role>saveRole(
 			@RequestBody Role role){
 		if(role.getName().equalsIgnoreCase("SUPER USER")) {
-			throw new InvalidOperationException("Role name not available for use");
+			throw new InvalidOperationException("Role name not available");
 		}
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/roles/save").toUriString());
 		return ResponseEntity.created(uri).body(userService.saveRole(role));
@@ -116,10 +126,21 @@ public class UserResource {
 			@RequestBody Role role){
 		Role roleToUpdate = userService.getRoleById(role.getId());		
 		if(roleToUpdate.getName().equalsIgnoreCase("SUPER USER")) {
-			throw new InvalidOperationException("Role name not available for use");
+			throw new InvalidOperationException("Editing the SUPER USER role is not allowed");
 		}
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/roles/update").toUriString());
 		return ResponseEntity.created(uri).body(userService.saveRole(role));
+	}
+	
+	@DeleteMapping("/roles/delete")
+	public ResponseEntity<Boolean> deleteRole(
+			@RequestParam(name = "id") Long id){
+		Role role = userService.getRoleById(id);
+		if(role.getName().equalsIgnoreCase("SUPER USER")) {
+			throw new InvalidOperationException("Deleting the SUPER USER role is not allowed");
+		}
+		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/roles/delete").toUriString());
+		return ResponseEntity.created(uri).body(userService.deleteRole(role));
 	}
 
 	@PostMapping("/roles/addtouser")

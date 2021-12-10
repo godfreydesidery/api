@@ -26,6 +26,7 @@ public interface UserService {
 	List<Role>getRoles(); // return all the roles
 	Role getRole(String name);
 	Role getRoleById(Long id);
+	boolean deleteRole(Role role);
 	List<String>getOperations();
 	List<String>getObjects();
 	List<String>getPrivileges(String roleName);
