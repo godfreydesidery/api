@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.orbix.api.domain.Privilege;
 import com.orbix.api.domain.Role;
+import com.orbix.api.domain.Shortcut;
 import com.orbix.api.domain.User;
 
 /**
@@ -30,4 +31,7 @@ public interface UserService {
 	List<String>getOperations();
 	List<String>getObjects();
 	List<String>getPrivileges(String roleName);
+	boolean createShortcut(String username, String name, String link);
+	List<Shortcut> loadShortcuts(String username);
+	
 }

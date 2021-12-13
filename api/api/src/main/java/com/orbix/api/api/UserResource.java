@@ -38,6 +38,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.orbix.api.domain.Privilege;
 import com.orbix.api.domain.Role;
+import com.orbix.api.domain.Shortcut;
 import com.orbix.api.domain.User;
 import com.orbix.api.exceptions.InvalidOperationException;
 import com.orbix.api.security.Operation;
@@ -232,6 +233,22 @@ public class UserResource {
 			}
 		}
 		return true;
+	}
+	
+	@PostMapping("/shortcuts/create")
+	public ResponseEntity<Boolean> createShortcut(
+			@RequestParam String username,
+			@RequestParam String name,
+			@RequestParam String link){
+		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/shortcuts/create").toUriString());
+		return ResponseEntity.created(uri).body(userService.createShortcut(username, name, link));
+	}
+	
+	@GetMapping("/shortcuts/load")
+	public ResponseEntity<List<Shortcut>> loadShortcuts(
+			@RequestParam String username){		
+		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/shortcuts/create").toUriString());
+		return ResponseEntity.created(uri).body(userService.loadShortcuts(username));
 	}
 }
  

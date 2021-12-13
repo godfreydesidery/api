@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import javax.transaction.Transactional;
 
@@ -22,10 +23,15 @@ import org.springframework.stereotype.Service;
 
 import com.orbix.api.domain.Privilege;
 import com.orbix.api.domain.Role;
+import com.orbix.api.domain.Shortcut;
 import com.orbix.api.domain.User;
+import com.orbix.api.exceptions.DuplicateEntryException;
+import com.orbix.api.exceptions.InvalidOperationException;
 import com.orbix.api.exceptions.NotFoundException;
+import com.orbix.api.exceptions.ResourceNotFoundException;
 import com.orbix.api.repositories.PrivilegeRepository;
 import com.orbix.api.repositories.RoleRepository;
+import com.orbix.api.repositories.ShortcutRepository;
 import com.orbix.api.repositories.UserRepository;
 import com.orbix.api.security.Object_;
 import com.orbix.api.security.Operation;
@@ -47,6 +53,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 	private final RoleRepository roleRepository;
 	private final PrivilegeRepository privilegeRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final ShortcutRepository shortcutRepository;
 
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {		
@@ -224,5 +231,35 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 		roleRepository.delete(role);
 		return true;
 	}
-	
+
+	@Override
+	public boolean createShortcut(String username, String name, String link) {	
+		Shortcut shortcut = new Shortcut();
+		
+		try {
+			User user = userRepository.findByUsername(username);
+			shortcut.setUser(user);
+			shortcut.setName(name);
+			shortcut.setLink(link);
+			Optional<User> userExist = shortcutRepository.findByLinkAndUser(link, user);
+			if(!userExist.isPresent()) {
+				shortcutRepository.save(shortcut);
+			}else {
+				throw new DuplicateEntryException("Could not save shortcut, shortcut already exist");
+			}
+		}catch(Exception e) {
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public List<Shortcut> loadShortcuts(String username) {
+		try {
+			User user = userRepository.findByUsername(username);
+			return shortcutRepository.findByUser(user);
+		}catch(Exception e) {
+			throw new InvalidOperationException("Could not load shortcuts");
+		}
+	}	
 }

@@ -74,7 +74,7 @@ protected ConfigurableApplicationContext springContext;
 			
 			userService.saveRole(new Role(null, "SUPER USER", null));
 						
-			userService.saveUser(new User(null, "superuser", "superuser", null, null, "1111", "Godfrey", "Desidery", "Shirima", "Godfrey Shirima", true, new ArrayList<>()));
+			userService.saveUser(new User(null, "superuser", "superuser", null, null, "1111", "Godfrey", "Desidery", "Shirima", "Godfrey Shirima", true, null,new ArrayList<>()));
 			
 			userService.addRoleToUser("superuser", "SUPER USER");
 						
