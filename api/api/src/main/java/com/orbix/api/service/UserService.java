@@ -24,6 +24,7 @@ public interface UserService {
 	boolean deleteUser(User user);
 	List<User>getUsers(); //edit this to limit the number, for perfomance.
 	void addPrivilegeToRole(String roleName, String privilegeName);
+	void removePrivilegeFromRole(String roleName, String privilegeName);
 	List<Role>getRoles(); // return all the roles
 	Role getRole(String name);
 	Role getRoleById(Long id);

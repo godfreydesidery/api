@@ -72,11 +72,12 @@ protected ConfigurableApplicationContext springContext;
 		return args -> {
 			dayService.saveDay(new Day());
 			
-			userService.saveRole(new Role(null, "SUPER USER", null));
+			userService.saveRole(new Role(null, "ROOT", null));
 						
-			userService.saveUser(new User(null, "superuser", "superuser", null, null, "1111", "Godfrey", "Desidery", "Shirima", "Godfrey Shirima", true, null,new ArrayList<>()));
-			
-			userService.addRoleToUser("superuser", "SUPER USER");
+			userService.saveUser(new User(null, "root", "r00tpA55w0Rd", null, null, "root@NAN", "Root", "Root", "Root", "Root @ Root", true, null,new ArrayList<>()));
+			userService.saveUser(new User(null, "grasiana", "r00tpA55w0Rd", null, null, "1234", "	grasiana", "Root", "Shirima", "Grasiana Shirima", true, null,new ArrayList<>()));
+
+			userService.addRoleToUser("root", "ROOT");
 						
 			Field[] objectFields = Object_.class.getDeclaredFields();
 			Field[] operationFields = Operation.class.getDeclaredFields();
@@ -91,6 +92,18 @@ protected ConfigurableApplicationContext springContext;
 					}
 				}
 			}
+			
+			userService.addPrivilegeToRole("ROOT", "USER-CREATE");
+			userService.addPrivilegeToRole("ROOT", "USER-READ");
+			userService.addPrivilegeToRole("ROOT", "USER-UPDATE");
+			userService.addPrivilegeToRole("ROOT", "USER-DELETE");
+			userService.addPrivilegeToRole("ROOT", "USER-ACTIVATE");
+			
+			userService.addPrivilegeToRole("ROOT", "ROLE-CREATE");
+			userService.addPrivilegeToRole("ROOT", "ROLE-READ");
+			userService.addPrivilegeToRole("ROOT", "ROLE-UPDATE");
+			userService.addPrivilegeToRole("ROOT", "ROLE-DELETE");
+			userService.addPrivilegeToRole("ROOT", "ROLE-ACTIVATE");
 		};
 	}
 	

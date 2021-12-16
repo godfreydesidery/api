@@ -26,14 +26,18 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.orbix.api.exceptions.InvalidOperationException;
+import com.orbix.api.repositories.UserRepository;
 import com.orbix.api.service.UserService;
 import com.orbix.api.service.UserServiceImpl;
+
+
+import lombok.AllArgsConstructor;
 
 /**
  * @author GODFREY
  *
  */
-
 public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 	
 
@@ -59,8 +63,9 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
 			HttpServletRequest request, 
 			HttpServletResponse response, 
 			FilterChain chain,
-			Authentication authentication) throws IOException, ServletException {
+			Authentication authentication) throws IOException, ServletException {	
 		User user = (User)authentication.getPrincipal();
+		
 		Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
 		String access_token = JWT.create()
 				.withSubject(user.getUsername())

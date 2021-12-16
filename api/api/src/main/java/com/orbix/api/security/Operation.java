@@ -14,4 +14,5 @@ public class Operation {
 	 public static String DELETE = "DELETE";
 	 public static String APPROVE= "APPROVE";
 	 public static String CANCEL= "CANCEL";
+	 public static String ACTIVATE = "ACTIVATE";
 }

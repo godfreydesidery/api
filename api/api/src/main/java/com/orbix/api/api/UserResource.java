@@ -6,6 +6,7 @@ package com.orbix.api.api;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +20,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,14 +43,14 @@ import com.orbix.api.domain.Role;
 import com.orbix.api.domain.Shortcut;
 import com.orbix.api.domain.User;
 import com.orbix.api.exceptions.InvalidOperationException;
-import com.orbix.api.security.Operation;
+import com.orbix.api.repositories.PrivilegeRepository;
+import com.orbix.api.repositories.RoleRepository;
 import com.orbix.api.service.UserService;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author GODFREY
@@ -57,65 +59,109 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
-@Slf4j
 public class UserResource {
 	
+	private final RoleRepository roleRepository;
+	private final PrivilegeRepository privilegeRepository;
 	private final UserService userService;
 	
 	@GetMapping("/users")
+	@PreAuthorize("hasAnyAuthority('USER-READ')")
 	public ResponseEntity<List<User>>getUsers(){
 		return ResponseEntity.ok().body(userService.getUsers());
 	}
 	
 	@GetMapping("/users/get_user")
+	@PreAuthorize("hasAnyAuthority('USER-READ')")
 	public ResponseEntity<User> getUser(
 			@RequestParam(name = "username") String username){
 		return ResponseEntity.ok().body(userService.getUser(username));
 	}
 	
+	@GetMapping("/users/load_user")
+	public ResponseEntity<UserModel> loadUser(
+			@RequestParam(name = "username") String username){
+		User user = userService.getUser(username);
+		if(!user.isActive()) {
+			throw new InvalidOperationException("Could not load user, user not active");
+		}
+		UserModel userModel = new UserModel();
+		userModel.setId(user.getId());
+		userModel.setAlias(user.getAlias());
+		return ResponseEntity.ok().body(userModel);
+	}
+	
 	
 	@PostMapping("/users/create")
+	@PreAuthorize("hasAnyAuthority('USER-CREATE')")
 	public ResponseEntity<User>createUser(
 			@RequestBody User user){
-		if(user.getUsername().equals("superuser")) {
+		if(user.getUsername().equals("root")) {
 			throw new InvalidOperationException("Username not available");
 		}
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/users/create").toUriString());
 		return ResponseEntity.created(uri).body(userService.saveUser(user));
 	}
-	
+		
 	@PutMapping("/users/update")
+	@PreAuthorize("hasAnyAuthority('USER-UPDATE')")
 	public ResponseEntity<User>updateUser(
-			@RequestBody User user){
+			@RequestBody User user, 
+			HttpServletRequest request){
+		String authorizationHeader = request.getHeader("Authorization");
+		String username = getUsernameFromAuthorizationHeader(authorizationHeader);		
 		User userToUpdate = userService.getUserById(user.getId());
+		if(userToUpdate.getUsername().equals(username)) {
+			if(userToUpdate.isActive() == true && user.isActive() == false) {
+				throw new InvalidOperationException("A user can not deactivate itself");
+			}else if(userToUpdate.isActive() == false && user.isActive() == true) {
+				throw new InvalidOperationException("A user can not activate itself");
+			}
+		}
+		if(userToUpdate.getUsername().equals("root")) {
+			if(userToUpdate.isActive() == true && user.isActive() == true) {
+				throw new InvalidOperationException("The root user can only be activated or deactivated");
+			}else if(userToUpdate.isActive() == false && user.isActive() == false) {
+				throw new InvalidOperationException("The root user can only be activated or deactivated");
+			}
+			boolean active = user.isActive();
+			userToUpdate.setActive(active);
+			user = userToUpdate;
+			user.setPassword("");//ensure that the root password is not changed in the operation
+		}
+		
+		
 		if(!userToUpdate.getUsername().equalsIgnoreCase(user.getUsername())) {
-			throw new InvalidOperationException("Updating the SUPER USER profile is not allowed");
+			throw new InvalidOperationException("Updating the ROOT profile is not allowed");
 		}
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/users/update").toUriString());
 		return ResponseEntity.created(uri).body(userService.saveUser(user));
 	}
 	
 	@DeleteMapping("/users/delete")
+	@PreAuthorize("hasAnyAuthority('USER-DELETE')")
 	public ResponseEntity<Boolean> deleteUser(
 			@RequestParam(name = "id") Long id){
 		User user = userService.getUserById(id);
-		if(user.getUsername().equalsIgnoreCase("superuser")) {
-			throw new InvalidOperationException("Deleting the SUPER USER profile is not allowed");
+		if(user.getUsername().equalsIgnoreCase("root")) {
+			throw new InvalidOperationException("Deleting the ROOT profile is not allowed");
 		}
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/users/delete").toUriString());
 		return ResponseEntity.created(uri).body(userService.deleteUser(user));
 	}
 	
 	@GetMapping("/roles/get_role")
+	@PreAuthorize("hasAnyAuthority('ROLE-READ')")
 	public ResponseEntity<Role> getRole(
 			@RequestParam(name = "name") String name){
 		return ResponseEntity.ok().body(userService.getRole(name));
 	}
 	
 	@PostMapping("/roles/create")
+	@PreAuthorize("hasAnyAuthority('ROLE-CREATE')")
 	public ResponseEntity<Role>saveRole(
 			@RequestBody Role role){
-		if(role.getName().equalsIgnoreCase("SUPER USER")) {
+		if(role.getName().equalsIgnoreCase("ROOT")) {
 			throw new InvalidOperationException("Role name not available");
 		}
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/roles/save").toUriString());
@@ -123,28 +169,31 @@ public class UserResource {
 	}
 	
 	@PutMapping("/roles/update")
+	@PreAuthorize("hasAnyAuthority('ROLE-UPDATE')")
 	public ResponseEntity<Role>updateRole(
 			@RequestBody Role role){
 		Role roleToUpdate = userService.getRoleById(role.getId());		
-		if(roleToUpdate.getName().equalsIgnoreCase("SUPER USER")) {
-			throw new InvalidOperationException("Editing the SUPER USER role is not allowed");
+		if(roleToUpdate.getName().equalsIgnoreCase("ROOT")) {
+			throw new InvalidOperationException("Editing the ROOT role is not allowed");
 		}
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/roles/update").toUriString());
 		return ResponseEntity.created(uri).body(userService.saveRole(role));
 	}
 	
 	@DeleteMapping("/roles/delete")
+	@PreAuthorize("hasAnyAuthority('ROLE-DELETE')")
 	public ResponseEntity<Boolean> deleteRole(
 			@RequestParam(name = "id") Long id){
 		Role role = userService.getRoleById(id);
-		if(role.getName().equalsIgnoreCase("SUPER USER")) {
-			throw new InvalidOperationException("Deleting the SUPER USER role is not allowed");
+		if(role.getName().equalsIgnoreCase("ROOT")) {
+			throw new InvalidOperationException("Deleting the ROOT role is not allowed");
 		}
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/roles/delete").toUriString());
 		return ResponseEntity.created(uri).body(userService.deleteRole(role));
 	}
 
 	@PostMapping("/roles/addtouser")
+	@PreAuthorize("hasAnyAuthority('USER-UPDATE')")
 	public ResponseEntity<Role>addRoleToUser(
 			@RequestBody RoleToUserForm form){
 		userService.addRoleToUser(form.getUsername(), form.getRoleName());
@@ -224,8 +273,15 @@ public class UserResource {
 	}
 	
 	@PostMapping("/privileges/addtorole")
+	@PreAuthorize("hasAnyAuthority('ROLE-UPDATE')")
 	public boolean addPrivilegeToRole(
 			@RequestBody AccessModel form){	
+		Role role = roleRepository.findByName(form.getRole());
+		Collection<Privilege> privileges = new ArrayList<>(role.getPrivileges());
+		for(Privilege p : privileges) {
+			userService.removePrivilegeFromRole(role.getName(), p.getName());
+		}
+		
 		for(ObjectModel model : form.getPrivileges()) {
 			String object = model.getObject();
 			for(String operation : model.getOperations()) {
@@ -235,12 +291,15 @@ public class UserResource {
 		return true;
 	}
 	
-	@PostMapping("/shortcuts/create")
+	@PostMapping("/shortcuts/create")	
 	public ResponseEntity<Boolean> createShortcut(
 			@RequestParam String username,
 			@RequestParam String name,
 			@RequestParam String link){
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/shortcuts/create").toUriString());
+		for(int i =0; i<100;i++) {
+			System.out.println(i);
+		}
 		return ResponseEntity.created(uri).body(userService.createShortcut(username, name, link));
 	}
 	
@@ -249,6 +308,15 @@ public class UserResource {
 			@RequestParam String username){		
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/shortcuts/create").toUriString());
 		return ResponseEntity.created(uri).body(userService.loadShortcuts(username));
+	}
+	
+	private String getUsernameFromAuthorizationHeader(String authorizationHeader) {
+		String token = authorizationHeader.substring("Bearer ".length());
+		Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
+		JWTVerifier verifier = JWT.require(algorithm).build();
+		DecodedJWT decodedJWT = verifier.verify(token);
+		String username = decodedJWT.getSubject();
+		return username;
 	}
 }
  
@@ -283,3 +351,13 @@ class ObjectModel{
 	String object;
 	String[] operations;
 }
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+class UserModel{
+	Long id;
+	String alias;	
+}
+
+
