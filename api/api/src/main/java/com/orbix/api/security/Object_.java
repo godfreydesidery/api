@@ -13,5 +13,7 @@ public class Object_ {
 	//public static String REPORT = "REPORT";
 	public static String USER = "USER";
 	public static String ROLE = "ROLE";
+	public static String TILL = "TILL";
+	public static String COMPANY_PROFILE = "COMPANY_PROFILE";
 	//public static String GRN= "GRN";
 }
