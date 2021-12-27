@@ -19,5 +19,8 @@ public interface DayRepository extends JpaRepository<Day, Long> {
 	
 	@Query("select count(d) > 0 from Day d")
 	boolean hasData();
+	
+	@Query("SELECT MAX(d.id) FROM Day d")
+	Long getLastId();
 
 }

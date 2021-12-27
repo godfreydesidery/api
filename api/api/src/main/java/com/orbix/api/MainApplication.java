@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.TimeZone;
 
 import javax.annotation.PostConstruct;
+import javax.swing.JOptionPane;
 
 import org.hibernate.type.TypeResolver;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,8 +33,10 @@ import com.orbix.api.repositories.DayRepository;
 import com.orbix.api.security.Object_;
 import com.orbix.api.security.Operation;
 import com.orbix.api.service.DayService;
+import com.orbix.api.service.MaterialServiceImpl;
 import com.orbix.api.service.UserService;
 
+import lombok.extern.slf4j.Slf4j;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.spi.DocumentationType;
@@ -46,6 +49,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableAutoConfiguration
 @EnableSwagger2
 //@EnableWebMvc
+@Slf4j
 public class MainApplication {
 protected ConfigurableApplicationContext springContext;
 
@@ -70,15 +74,24 @@ protected ConfigurableApplicationContext springContext;
 	@Bean
 	CommandLineRunner run(UserService userService, DayService dayService) {
 		return args -> {
-			dayService.saveDay(new Day());
+			if(!dayService.hasData()) {
+				/**
+				 * Creating the first day
+				 */
+				log.info("Creating the first day "+(new Day()).toString());
+				dayService.saveDay(new Day());
+			}
+			try {
+				userService.saveRole(new Role(null, "ROOT", null));
+			}catch(Exception e) {}	
+			try {
+				userService.saveUser(new User(null, "root", "r00tpA55w0Rd", null, null, "root@NAN", "Root", "Root", "Root", "Root @ Root", true, null,new ArrayList<>()));
+				userService.saveUser(new User(null, "grasiana", "r00tpA55w0Rd", null, null, "1234", "	grasiana", "Root", "Shirima", "Grasiana Shirima", true, null,new ArrayList<>()));
+			}catch(Exception e) {}		
+			try {
+				userService.addRoleToUser("root", "ROOT");
+			}catch(Exception e) {}		
 			
-			userService.saveRole(new Role(null, "ROOT", null));
-						
-			userService.saveUser(new User(null, "root", "r00tpA55w0Rd", null, null, "root@NAN", "Root", "Root", "Root", "Root @ Root", true, null,new ArrayList<>()));
-			userService.saveUser(new User(null, "grasiana", "r00tpA55w0Rd", null, null, "1234", "	grasiana", "Root", "Shirima", "Grasiana Shirima", true, null,new ArrayList<>()));
-
-			userService.addRoleToUser("root", "ROOT");
-						
 			Field[] objectFields = Object_.class.getDeclaredFields();
 			Field[] operationFields = Operation.class.getDeclaredFields();
 			for(int i = 0; i < objectFields.length; i++) {
@@ -92,18 +105,19 @@ protected ConfigurableApplicationContext springContext;
 					}
 				}
 			}
-			
-			userService.addPrivilegeToRole("ROOT", "USER-CREATE");
-			userService.addPrivilegeToRole("ROOT", "USER-READ");
-			userService.addPrivilegeToRole("ROOT", "USER-UPDATE");
-			userService.addPrivilegeToRole("ROOT", "USER-DELETE");
-			userService.addPrivilegeToRole("ROOT", "USER-ACTIVATE");
-			
-			userService.addPrivilegeToRole("ROOT", "ROLE-CREATE");
-			userService.addPrivilegeToRole("ROOT", "ROLE-READ");
-			userService.addPrivilegeToRole("ROOT", "ROLE-UPDATE");
-			userService.addPrivilegeToRole("ROOT", "ROLE-DELETE");
-			userService.addPrivilegeToRole("ROOT", "ROLE-ACTIVATE");
+			try {
+				userService.addPrivilegeToRole("ROOT", "USER-CREATE");
+				userService.addPrivilegeToRole("ROOT", "USER-READ");
+				userService.addPrivilegeToRole("ROOT", "USER-UPDATE");
+				userService.addPrivilegeToRole("ROOT", "USER-DELETE");
+				userService.addPrivilegeToRole("ROOT", "USER-ACTIVATE");
+				
+				userService.addPrivilegeToRole("ROOT", "ROLE-CREATE");
+				userService.addPrivilegeToRole("ROOT", "ROLE-READ");
+				userService.addPrivilegeToRole("ROOT", "ROLE-UPDATE");
+				userService.addPrivilegeToRole("ROOT", "ROLE-DELETE");
+				userService.addPrivilegeToRole("ROOT", "ROLE-ACTIVATE");
+			}catch(Exception e) {}			
 		};
 	}
 	

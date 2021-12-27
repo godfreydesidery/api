@@ -38,6 +38,11 @@ public class DayResource {
 		//return ResponseEntity.ok().body(dayService.getBussinessDate());
 		return dayData;
 	}
+	
+	@GetMapping("/days/end_day")
+	public boolean endDay(){		
+		return dayService.endDay();
+	}
 }
 @Data
 class DayData{

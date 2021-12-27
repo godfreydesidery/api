@@ -5,6 +5,8 @@ package com.orbix.api.service;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import com.orbix.api.domain.Privilege;
 import com.orbix.api.domain.Role;
 import com.orbix.api.domain.Shortcut;
@@ -34,5 +36,7 @@ public interface UserService {
 	List<String>getPrivileges(String roleName);
 	boolean createShortcut(String username, String name, String link);
 	List<Shortcut> loadShortcuts(String username);
+	
+	Long getUserId(HttpServletRequest request);
 	
 }

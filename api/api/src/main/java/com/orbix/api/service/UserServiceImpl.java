@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -165,10 +166,10 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 	@Override
 	public void addPrivilegeToRole(String roleName, String privilegeName) {
 		Role role = roleRepository.findByName(roleName);
-		Privilege privilege = privilegeRepository.findByName(privilegeName);
+		Optional<Privilege> p = privilegeRepository.findByName(privilegeName);
 		
 		try {
-			role.getPrivileges().add(privilege);
+			role.getPrivileges().add(p.get());
 		}catch(Exception e) {
 			log.info(e.getMessage());
 		}			
@@ -177,10 +178,10 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 	@Override
 	public void removePrivilegeFromRole(String roleName, String privilegeName) {
 		Role role = roleRepository.findByName(roleName);
-		Privilege privilege = privilegeRepository.findByName(privilegeName);
+		Optional<Privilege> p = privilegeRepository.findByName(privilegeName);
 		
 		try {
-			role.getPrivileges().remove(privilege);			
+			role.getPrivileges().remove(p.get());			
 		}catch(Exception e) {
 			log.info(e.getMessage());
 		}			
@@ -305,5 +306,10 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 		}catch(Exception e) {
 			throw new InvalidOperationException("Could not load shortcuts");
 		}
+	}
+
+	@Override
+	public Long getUserId(HttpServletRequest request) {
+		return userRepository.findByUsername(request.getUserPrincipal().getName()).getId();
 	}	
 }
