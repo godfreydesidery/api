@@ -22,6 +22,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -38,6 +39,7 @@ import lombok.AllArgsConstructor;
  * @author GODFREY
  *
  */
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 	
 

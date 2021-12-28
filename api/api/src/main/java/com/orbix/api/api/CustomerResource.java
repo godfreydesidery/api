@@ -21,10 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.orbix.api.domain.Customer;
-import com.orbix.api.domain.Till;
 import com.orbix.api.service.CustomerService;
-import com.orbix.api.service.TillService;
-
 import lombok.RequiredArgsConstructor;
 
 /**

@@ -16,6 +16,10 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
 import com.orbix.api.filter.CustomAuthenticationFilter;
 import com.orbix.api.filter.CustomAuthorizationFilter;
 
@@ -27,9 +31,10 @@ import lombok.RequiredArgsConstructor;
  */
 @Configuration
 @EnableWebSecurity
+@EnableWebMvc
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
+public class SecurityConfig extends WebSecurityConfigurerAdapter implements WebMvcConfigurer {
 	
 	private final UserDetailsService userDetailsService;
 	private final BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -53,6 +58,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		.antMatchers("/swagger-ui").permitAll()
 		.antMatchers("/api/login/**").permitAll()
 		.antMatchers("/api/token/refresh/**").permitAll();
+		http.cors();
 		//Private endpoints
 		//.anyRequest().authenticated();
 		

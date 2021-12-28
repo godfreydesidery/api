@@ -22,6 +22,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.http.HttpStatus;
 
@@ -39,6 +40,7 @@ import lombok.extern.slf4j.Slf4j;
  *
  */
 @Slf4j
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class CustomAuthorizationFilter extends OncePerRequestFilter {
 
 	@Override
@@ -47,7 +49,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
 			HttpServletResponse response, 
 			FilterChain filterChain)
 			throws ServletException, IOException {
-		if(request.getServletPath().equals("/api/login") || request.getServletPath().equals("/api/token/refresh")) {
+		if(request.getServletPath().equals("**/api/login") || request.getServletPath().equals("**/api/token/refresh")) {
 			filterChain.doFilter(request, response);
 		} else {
 			String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
