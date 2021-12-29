@@ -60,8 +60,8 @@ public class LpoServiceImpl implements LpoService {
 		model.setValidityDays(l.getValidityDays());
 		model.setValidUntil(l.getValidUntil());
 		model.setComments(l.getComments());
-		if(l.getCreateAt() != null && l.getCreateBy() != null) {
-			model.setCreated(dayRepository.findById(l.getCreateAt()).get().getBussinessDate() +" "+ userRepository.getAlias(l.getCreateBy()));
+		if(l.getCreatedAt() != null && l.getCreatedBy() != null) {
+			model.setCreated(dayRepository.findById(l.getCreatedAt()).get().getBussinessDate() +" "+ userRepository.getAlias(l.getCreatedBy()));
 		}
 		if(l.getApprovedAt() != null && l.getApprovedBy() != null) {
 			model.setApproved(dayRepository.findById(l.getApprovedAt()).get().getBussinessDate() +" "+ userRepository.getAlias(l.getApprovedBy()));
@@ -86,8 +86,8 @@ public class LpoServiceImpl implements LpoService {
 		model.setValidityDays(l.get().getValidityDays());
 		model.setValidUntil(l.get().getValidUntil());
 		model.setComments(l.get().getComments());
-		if(l.get().getCreateAt() != null && l.get().getCreateBy() != null) {
-			model.setCreated(dayRepository.findById(l.get().getCreateAt()).get().getBussinessDate() +" "+ userRepository.getAlias(l.get().getCreateBy()));
+		if(l.get().getCreatedAt() != null && l.get().getCreatedBy() != null) {
+			model.setCreated(dayRepository.findById(l.get().getCreatedAt()).get().getBussinessDate() +" "+ userRepository.getAlias(l.get().getCreatedBy()));
 		}
 		if(l.get().getApprovedAt() != null && l.get().getApprovedBy() != null) {
 			model.setApproved(dayRepository.findById(l.get().getApprovedAt()).get().getBussinessDate() +" "+ userRepository.getAlias(l.get().getApprovedBy()));
@@ -125,8 +125,8 @@ public class LpoServiceImpl implements LpoService {
 		model.setValidityDays(l.get().getValidityDays());
 		model.setValidUntil(l.get().getValidUntil());
 		model.setComments(l.get().getComments());
-		if(l.get().getCreateAt() != null && l.get().getCreateBy() != null) {
-			model.setCreated(dayRepository.findById(l.get().getCreateAt()).get().getBussinessDate() +" "+ userRepository.getAlias(l.get().getCreateBy()));
+		if(l.get().getCreatedAt() != null && l.get().getCreatedBy() != null) {
+			model.setCreated(dayRepository.findById(l.get().getCreatedAt()).get().getBussinessDate() +" "+ userRepository.getAlias(l.get().getCreatedBy()));
 		}
 		if(l.get().getApprovedAt() != null && l.get().getApprovedBy() != null) {
 			model.setApproved(dayRepository.findById(l.get().getApprovedAt()).get().getBussinessDate() +" "+ userRepository.getAlias(l.get().getApprovedBy()));
@@ -177,8 +177,8 @@ public class LpoServiceImpl implements LpoService {
 			model.setValidityDays(l.getValidityDays());
 			model.setValidUntil(l.getValidUntil());
 			model.setComments(l.getComments());
-			if(l.getCreateAt() != null && l.getCreateBy() != null) {
-				model.setCreated(dayRepository.findById(l.getCreateAt()).get().getBussinessDate() +" "+ userRepository.getAlias(l.getCreateBy()));
+			if(l.getCreatedAt() != null && l.getCreatedBy() != null) {
+				model.setCreated(dayRepository.findById(l.getCreatedAt()).get().getBussinessDate() +" "+ userRepository.getAlias(l.getCreatedBy()));
 			}
 			if(l.getApprovedAt() != null && l.getApprovedBy() != null) {
 				model.setApproved(dayRepository.findById(l.getApprovedAt()).get().getBussinessDate() +" "+ userRepository.getAlias(l.getApprovedBy()));

@@ -102,8 +102,8 @@ public class LpoResource {
 		l.setValidityDays(lpo.getValidityDays());
 		l.setValidUntil(lpo.getValidUntil());
 		l.setComments(lpo.getComments());
-		l.setCreateBy(userService.getUserId(request));
-		l.setCreateAt(dayService.getDayId());
+		l.setCreatedBy(userService.getUserId(request));
+		l.setCreatedAt(dayService.getDayId());
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/lpos/create").toUriString());
 		return ResponseEntity.created(uri).body(lpoService.save(l));
 	}

@@ -4,9 +4,9 @@
 package com.orbix.api.domain;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -20,8 +20,6 @@ import javax.persistence.Table;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -39,34 +37,35 @@ import lombok.NoArgsConstructor;
 @Data  
 @NoArgsConstructor 
 @AllArgsConstructor
-@Table(name = "lpos")
-public class Lpo {
+@Table(name = "grns")
+public class Grn {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	@NotBlank
 	@Column(unique = true)
 	private String no;
-	private int validityDays;
-	private String status;
-	private LocalDate orderDate;
-	private LocalDate validUntil;
+	private LocalDate grnDate;
+	@Column(unique = true)
+	private String orderNo;
+	private String invoiceNo;
+	private String status;	
 	private String comments;
 	
 	private Long createdBy;
-	private Long approvedBy;
-	private Long printedBy;
 	private Long createdAt;
+	private Long approvedBy;	
 	private Long approvedAt;
-	private Long printedAt;
 	
-	@ManyToOne(targetEntity = Supplier.class, fetch = FetchType.EAGER, optional = true)
-    @JoinColumn(name = "supplier_id", nullable = true , updatable = true)
-    @OnDelete(action = OnDeleteAction.NO_ACTION)	
-    private Supplier supplier;
+	@ManyToOne(targetEntity = Lpo.class, fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "lpo_id", nullable = true , updatable = true)
+    @OnDelete(action = OnDeleteAction.NO_ACTION)
+	@JsonIgnoreProperties("lpoDetails")
+    private Lpo lpo;
 	
-	@OneToMany(targetEntity = LpoDetail.class, mappedBy = "lpo", fetch = FetchType.EAGER, orphanRemoval = true)
+	@OneToMany(targetEntity = GrnDetail.class, mappedBy = "grn", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
     @Valid
-    @JsonIgnoreProperties("lpo")
-    private List<LpoDetail> lpoDetails;
+    @JsonIgnoreProperties("grn")
+    private List<GrnDetail> grnDetails;
+	
 }
