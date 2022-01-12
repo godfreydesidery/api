@@ -20,4 +20,5 @@ public interface MaterialService {
 	Material getByDescription(String description);
 	boolean delete(Material material);
 	List<Material>getAll();	
+	List<String> getActiveDescriptions();
 }

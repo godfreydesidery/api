@@ -32,5 +32,8 @@ public interface GrnRepository extends JpaRepository<Grn, Long> {
 	
 	@Query("SELECT g FROM Grn g WHERE g.status IN (:statuses)")
 	List<Grn> findAllVissible(List<String> statuses);
+	
+	@Query("SELECT g FROM Grn g WHERE g.status =:status")
+	List<Grn> findAllReceived(String status);
 
 }

@@ -38,8 +38,10 @@ public class GrnDetail {
 	@NotNull	
 	private double qtyOrdered;
 	private double qtyReceived = 0;
-	private double costPriceVatIncl;
-	private double costPriceVatExcl;
+	private double supplierPriceVatIncl;
+	private double supplierPriceVatExcl;
+	private double clientPriceVatIncl;
+	private double clientPriceVatExcl;
 	
 	@ManyToOne(targetEntity = Product.class, fetch = FetchType.EAGER,  optional = true)
     @JoinColumn(name = "product_id", nullable = true , updatable = true)

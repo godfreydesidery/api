@@ -46,11 +46,6 @@ public class SupplierResource {
 	
 	@GetMapping("/suppliers/get_names")
 	public ResponseEntity<List<String>> getSupplierNames(){
-//		ArrayList<String> names = new ArrayList<String>();
-//		List<Supplier> s = supplierService.getAll();
-//		for(Supplier a : s) {
-//			names.add(a.getName());
-//		}
 		List<String> names = new ArrayList<String>();
 		names = supplierService.getNames();
 		return ResponseEntity.ok().body(names);

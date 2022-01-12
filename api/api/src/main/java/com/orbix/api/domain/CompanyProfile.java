@@ -34,7 +34,7 @@ public class CompanyProfile {
 	@NotBlank
 	private String contactName;
 	@Lob
-	private Byte[] logo;
+	private byte[] logo;
 	private String tin;
 	private String vrn;
 	private String physicalAddress;

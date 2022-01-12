@@ -283,10 +283,19 @@ public class UserResource {
 		for(Privilege p : privileges) {
 			userService.removePrivilegeFromRole(role.getName(), p.getName());
 		}
-		
+		int i = 0;		
 		for(ObjectModel model : form.getPrivileges()) {
+			if(i > form.getPrivileges().length - 1) {
+				break;
+			}
+			i++;
 			String object = model.getObject();
+			int j = 0;
 			for(String operation : model.getOperations()) {
+				if(j > model.getOperations().length - 1) {
+					break;
+				}
+				j++;
 				userService.addPrivilegeToRole(form.getRole(), object+"-"+operation);
 			}
 		}

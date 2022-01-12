@@ -6,7 +6,6 @@ package com.orbix.api.models;
 import com.orbix.api.domain.Lpo;
 import com.orbix.api.domain.Product;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 /**

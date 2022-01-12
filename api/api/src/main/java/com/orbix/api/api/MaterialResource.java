@@ -4,6 +4,7 @@
 package com.orbix.api.api;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -46,6 +47,13 @@ private final 	MaterialService materialService;
 	public ResponseEntity<Material> getMaterial(
 			@RequestParam(name = "id") Long id){
 		return ResponseEntity.ok().body(materialService.get(id));
+	}
+	
+	@GetMapping("/materials/get_descriptions")
+	public ResponseEntity<List<String>> getActiveDescriptions(){
+		List<String> descriptions = new ArrayList<String>();
+		descriptions = materialService.getActiveDescriptions();
+		return ResponseEntity.ok().body(descriptions);
 	}
 	
 	@GetMapping("/materials/get_by_code")

@@ -110,5 +110,10 @@ public class MaterialServiceImpl implements MaterialService {
 	private boolean allowDelete(Material material) {
 		return true;
 	}
+	
+	@Override
+	public List<String> getActiveDescriptions() {
+		return materialRepository.getActiveDescriptions();	
+	}
 
 }

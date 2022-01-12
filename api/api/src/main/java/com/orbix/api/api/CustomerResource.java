@@ -4,6 +4,7 @@
 package com.orbix.api.api;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -41,6 +42,13 @@ public class CustomerResource {
 		return ResponseEntity.ok().body(customerService.getAll());
 	}
 	
+	@GetMapping("/customers/get_names")
+	public ResponseEntity<List<String>> getCustomerNames(){
+		List<String> names = new ArrayList<String>();
+		names = customerService.getNames();
+		return ResponseEntity.ok().body(names);
+	}
+	
 	@GetMapping("/customers/get")
 	@PreAuthorize("hasAnyAuthority('CUSTOMER-READ')")
 	public ResponseEntity<Customer> getCustomer(
@@ -59,6 +67,7 @@ public class CustomerResource {
 	@PreAuthorize("hasAnyAuthority('CUSTOMER-CREATE')")
 	public ResponseEntity<Customer>createCustomer(
 			@RequestBody Customer customer){
+		customer.setNo("NA");
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/customers/create").toUriString());
 		return ResponseEntity.created(uri).body(customerService.save(customer));
 	}
@@ -80,5 +89,4 @@ public class CustomerResource {
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/customers/delete").toUriString());
 		return ResponseEntity.created(uri).body(customerService.delete(customer));
 	}
-
 }

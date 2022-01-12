@@ -49,13 +49,14 @@ public class Material {
 	private double maximumInventory = 0;
 	private double defaultReorderQty = 0;
 	private double defaultReorderLevel = 0;
+	private boolean active = true;
 	
-	@ManyToOne(targetEntity = Category.class, fetch = FetchType.LAZY,  optional = true)
+	@ManyToOne(targetEntity = Category.class, fetch = FetchType.EAGER,  optional = true)
     @JoinColumn(name = "category_id", nullable = true , updatable = true)
     @OnDelete(action = OnDeleteAction.NO_ACTION)	
     private Category category;
 	
-	@ManyToOne(targetEntity = SubCategory.class, fetch = FetchType.LAZY,  optional = true)
+	@ManyToOne(targetEntity = SubCategory.class, fetch = FetchType.EAGER,  optional = true)
     @JoinColumn(name = "sub_category_id", nullable = true , updatable = true)
     @OnDelete(action = OnDeleteAction.NO_ACTION)	
     private SubCategory subCategory;	

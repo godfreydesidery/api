@@ -11,6 +11,7 @@ import javax.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import com.orbix.api.accessories.Formater;
+import com.orbix.api.domain.Grn;
 import com.orbix.api.domain.Lpo;
 import com.orbix.api.domain.LpoDetail;
 import com.orbix.api.exceptions.InvalidEntryException;
@@ -165,6 +166,7 @@ public class LpoServiceImpl implements LpoService {
 		statuses.add("PENDING");
 		statuses.add("APPROVED");
 		statuses.add("PRINTED");
+		statuses.add("RECEIVED");
 		List<Lpo> lpos = lpoRepository.findAllVissible(statuses);
 		List<LpoModel> models = new ArrayList<LpoModel>();
 		for(Lpo l : lpos) {
@@ -265,6 +267,29 @@ public class LpoServiceImpl implements LpoService {
 		Long number = lpo.getId();		
 		String sNumber = number.toString();
 		return "LPO-"+Formater.formatSix(sNumber);
+	}
+	
+	@Override
+	public boolean archive(Lpo lpo) {
+		if(!lpo.getStatus().equals("RECEIVED")) {
+			throw new InvalidOperationException("Could not process, only a RECEIVED LPO can be archived");
+		}
+		lpo.setStatus("ARCHIVED");
+		lpoRepository.saveAndFlush(lpo);
+		return true;
+	}
+
+	@Override
+	public boolean archiveAll() {
+		List<Lpo> lpos = lpoRepository.findAllReceived("RECEIVED");
+		if(lpos.isEmpty()) {
+			throw new NotFoundException("No LPO to archive");
+		}
+		for(Lpo l : lpos) {
+			l.setStatus("ARCHIVED");
+			lpoRepository.saveAndFlush(l);
+		}
+		return true;
 	}
 	
 		

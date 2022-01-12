@@ -16,6 +16,8 @@ import com.orbix.api.domain.Grn;
 import com.orbix.api.domain.GrnDetail;
 import com.orbix.api.domain.Lpo;
 import com.orbix.api.domain.LpoDetail;
+import com.orbix.api.domain.Product;
+import com.orbix.api.domain.ProductStockCard;
 import com.orbix.api.exceptions.InvalidEntryException;
 import com.orbix.api.exceptions.InvalidOperationException;
 import com.orbix.api.exceptions.NotFoundException;
@@ -26,6 +28,7 @@ import com.orbix.api.repositories.GrnDetailRepository;
 import com.orbix.api.repositories.GrnRepository;
 import com.orbix.api.repositories.LpoDetailRepository;
 import com.orbix.api.repositories.LpoRepository;
+import com.orbix.api.repositories.ProductRepository;
 import com.orbix.api.repositories.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -47,9 +50,12 @@ public class GrnServiceImpl implements GrnService {
 	private final LpoDetailRepository lpoDetailRepository;
 	private final UserRepository userRepository;
 	private final DayRepository dayRepository;
+	private final ProductRepository productRepository;
+	
+	private final ProductStockCardService stockCardService;
 
 	@Override
-	public GrnModel save(Grn grn) {		
+	public GrnModel save(Grn grn) {			
 		/**
 		 * First check if the GRN has order attached, if not, reject
 		 * If yes, check order status, if order status is not printed, reject
@@ -58,7 +64,7 @@ public class GrnServiceImpl implements GrnService {
 		 * 
 		 * 
 		 */
-		Optional<Lpo> l = lpoRepository.findByNo(grn.getLpo().getNo());
+		Optional<Lpo> l = lpoRepository.findByNo(grn.getOrderNo());
 		if(!l.isPresent()) {
 			/**
 			 * Checks if the LPO is present
@@ -90,6 +96,7 @@ public class GrnServiceImpl implements GrnService {
 		 * Create a GRN collection wrapper
 		 */
 		List<GrnDetail> grnDetails = new ArrayList<GrnDetail>();
+		
 		if(grn.getId() == null) {
 			/**
 			 * If it is a new GRN
@@ -98,11 +105,11 @@ public class GrnServiceImpl implements GrnService {
 			List<LpoDetail> lpoDetails = lpoDetailRepository.findByLpo(l.get());
 			for(LpoDetail d : lpoDetails) {
 				GrnDetail gd = new GrnDetail();
-				gd.setCostPriceVatIncl(d.getCostPriceVatIncl());
-				gd.setCostPriceVatExcl(d.getCostPriceVatExcl());
+				gd.setClientPriceVatIncl(d.getCostPriceVatIncl());
+				gd.setClientPriceVatExcl(d.getCostPriceVatExcl());
 				gd.setProduct(d.getProduct());
 				gd.setQtyOrdered(d.getQty());
-				grnDetails.add(gd);
+				grnDetails.add(gd);				
 			}
 		}
 		/**
@@ -115,24 +122,29 @@ public class GrnServiceImpl implements GrnService {
 		grn.setLpo(l.get());		
 		Grn g = grnRepository.saveAndFlush(grn);
 		for(GrnDetail d : grnDetails) {
-			d.setGrn(g);
+			d.setGrn(g);			
 		}
-		if(grn.getId() == null) {
-			grn.setGrnDetails(grnDetails);
-		}		
+		
+		//if(grn.getId() == null) {
+			//g.setGrnDetails(grnDetails);
+		//}		
 		if(g.getNo().equals("NA")) {
 			g.setNo(generateGrnNo(g));
 			g = grnRepository.saveAndFlush(g);
 		}
-		/**
-		 * Save details for a new GRN
-		 */
+		if(!grnDetails.isEmpty()) {
+			for(GrnDetail d : grnDetails) {
+				d.setGrn(g);
+				grnDetailRepository.saveAndFlush(d);
+			}
+		}
 		
 		GrnModel model = new GrnModel();
 		model.setId(g.getId());
 		model.setNo(g.getNo());
 		model.setOrderNo(g.getOrderNo());
 		model.setInvoiceNo(g.getInvoiceNo());
+		model.setInvoiceAmount(g.getInvoiceAmount());
 		model.setStatus(g.getStatus());
 		model.setGrnDate(g.getGrnDate());		
 		model.setComments(g.getComments());		
@@ -146,13 +158,16 @@ public class GrnServiceImpl implements GrnService {
 		List<GrnDetail> details = grnDetailRepository.findByGrn(g);
 		for(GrnDetail d : details) {
 			GrnDetailModel m = new GrnDetailModel();
-			m.setCostPriceVatIncl(d.getCostPriceVatIncl());
-			m.setCostPriceVatExcl(d.getCostPriceVatExcl());
+			m.setClientPriceVatIncl(d.getClientPriceVatIncl());
+			m.setClientPriceVatExcl(d.getClientPriceVatExcl());
+			m.setSupplierPriceVatIncl(d.getSupplierPriceVatIncl());
+			m.setSupplierPriceVatExcl(d.getSupplierPriceVatExcl());
 			m.setProduct(d.getProduct());
 			m.setQtyOrdered(d.getQtyOrdered());
 			m.setQtyReceived(d.getQtyReceived());
 			detailModels.add(m);
 		}
+		model.setGrnDetails(detailModels);		
 		return model;
 	}
 
@@ -166,6 +181,7 @@ public class GrnServiceImpl implements GrnService {
 		model.setId(g.get().getId());
 		model.setNo(g.get().getNo());
 		model.setInvoiceNo(g.get().getInvoiceNo());
+		model.setInvoiceAmount(g.get().getInvoiceAmount());
 		model.setOrderNo(g.get().getOrderNo());
 		model.setStatus(g.get().getStatus());
 		model.setGrnDate(g.get().getGrnDate());		
@@ -185,8 +201,10 @@ public class GrnServiceImpl implements GrnService {
 			modelDetail.setProduct(d.getProduct());
 			modelDetail.setQtyOrdered(d.getQtyOrdered());
 			modelDetail.setQtyReceived(d.getQtyReceived());
-			modelDetail.setCostPriceVatIncl(d.getCostPriceVatIncl());
-			modelDetail.setCostPriceVatExcl(d.getCostPriceVatExcl());
+			modelDetail.setClientPriceVatIncl(d.getClientPriceVatIncl());
+			modelDetail.setClientPriceVatExcl(d.getClientPriceVatExcl());
+			modelDetail.setSupplierPriceVatIncl(d.getSupplierPriceVatIncl());
+			modelDetail.setSupplierPriceVatExcl(d.getSupplierPriceVatExcl());
 			modelDetails.add(modelDetail);
 		}
 		model.setGrnDetails(modelDetails);
@@ -203,6 +221,7 @@ public class GrnServiceImpl implements GrnService {
 		model.setId(g.get().getId());
 		model.setNo(g.get().getNo());
 		model.setInvoiceNo(g.get().getInvoiceNo());
+		model.setInvoiceAmount(g.get().getInvoiceAmount());
 		model.setOrderNo(g.get().getOrderNo());
 		model.setStatus(g.get().getStatus());
 		model.setGrnDate(g.get().getGrnDate());		
@@ -222,8 +241,10 @@ public class GrnServiceImpl implements GrnService {
 			modelDetail.setProduct(d.getProduct());
 			modelDetail.setQtyOrdered(d.getQtyOrdered());
 			modelDetail.setQtyReceived(d.getQtyReceived());
-			modelDetail.setCostPriceVatIncl(d.getCostPriceVatIncl());
-			modelDetail.setCostPriceVatExcl(d.getCostPriceVatExcl());
+			modelDetail.setClientPriceVatIncl(d.getClientPriceVatIncl());
+			modelDetail.setClientPriceVatExcl(d.getClientPriceVatExcl());
+			modelDetail.setSupplierPriceVatIncl(d.getSupplierPriceVatIncl());
+			modelDetail.setSupplierPriceVatExcl(d.getSupplierPriceVatExcl());
 			modelDetails.add(modelDetail);
 		}
 		model.setGrnDetails(modelDetails);
@@ -245,15 +266,16 @@ public class GrnServiceImpl implements GrnService {
 		statuses.add("BLANK");
 		statuses.add("PENDING");
 		statuses.add("APPROVED");
+		statuses.add("RECEIVED");
 		List<Grn> grns = grnRepository.findAllVissible(statuses);
 		List<GrnModel> models = new ArrayList<GrnModel>();
 		for(Grn g : grns) {
 			GrnModel model = new GrnModel();
-			Optional<Lpo> l = lpoRepository.findById(g.getLpo().getId());			
 			model.setId(g.getId());
 			model.setNo(g.getNo());
 			model.setGrnDate(g.getGrnDate());
 			model.setInvoiceNo(g.getInvoiceNo());
+			model.setInvoiceAmount(g.getInvoiceAmount());
 			model.setOrderNo(g.getOrderNo());
 			model.setStatus(g.getStatus());
 			model.setComments(g.getComments());
@@ -279,9 +301,9 @@ public class GrnServiceImpl implements GrnService {
 		model.setProduct(l.getProduct());
 		model.setQtyOrdered(l.getQtyOrdered());
 		model.setQtyReceived(l.getQtyReceived());
-		model.setCostPriceVatIncl(l.getCostPriceVatIncl());
-		model.setCostPriceVatExcl(l.getCostPriceVatExcl());
-		model.setGrn(l.getGrn());
+		model.setSupplierPriceVatIncl(l.getSupplierPriceVatIncl());
+		model.setSupplierPriceVatExcl(l.getSupplierPriceVatExcl());
+		//model.setGrn(l.getGrn());
 		return model;
 	}
 
@@ -296,8 +318,10 @@ public class GrnServiceImpl implements GrnService {
 		model.setProduct(l.get().getProduct());
 		model.setQtyOrdered(l.get().getQtyOrdered());
 		model.setQtyReceived(l.get().getQtyReceived());
-		model.setCostPriceVatIncl(l.get().getCostPriceVatIncl());
-		model.setCostPriceVatExcl(l.get().getCostPriceVatExcl());
+		model.setClientPriceVatIncl(l.get().getClientPriceVatIncl());
+		model.setClientPriceVatExcl(l.get().getClientPriceVatExcl());
+		model.setSupplierPriceVatIncl(l.get().getSupplierPriceVatIncl());
+		model.setSupplierPriceVatExcl(l.get().getSupplierPriceVatExcl());
 		model.setGrn(l.get().getGrn());
 		return model;
 	}
@@ -312,8 +336,10 @@ public class GrnServiceImpl implements GrnService {
 			model.setProduct(l.getProduct());
 			model.setQtyOrdered(l.getQtyOrdered());
 			model.setQtyReceived(l.getQtyReceived());
-			model.setCostPriceVatIncl(l.getCostPriceVatIncl());
-			model.setCostPriceVatExcl(l.getCostPriceVatExcl());
+			model.setClientPriceVatIncl(l.getClientPriceVatIncl());
+			model.setClientPriceVatExcl(l.getClientPriceVatExcl());
+			model.setSupplierPriceVatIncl(l.getSupplierPriceVatIncl());
+			model.setSupplierPriceVatExcl(l.getSupplierPriceVatExcl());
 			model.setGrn(l.getGrn());
 			models.add(model);
 		}
@@ -336,6 +362,136 @@ public class GrnServiceImpl implements GrnService {
 		Long number = grn.getId();		
 		String sNumber = number.toString();
 		return "GRN-"+Formater.formatSix(sNumber);
+	}
+
+	@Override
+	public GrnModel receive(Grn grn) {
+		/**
+		 * First check if GRN is PENDING
+		 * Validate GRN
+		 * Check all details for validity
+		 */
+		if(!grn.getStatus().equals("PENDING")) {
+			throw new InvalidOperationException("Could not process, only a pending GRN can be received");
+		}
+		if(!validate(grn)) {
+			throw new InvalidOperationException("Could not process, GRN invalid");
+		}
+		List<GrnDetail> details = grn.getGrnDetails();
+		/**
+		 * Here, cross check every detail for validity, if invalid, reject all
+		 */
+		for(GrnDetail d : details) {
+			if(d.getSupplierPriceVatIncl() < 0) {
+				throw new InvalidEntryException("Could not process, invalid cost price at ["+d.getProduct().getCode()+"] "+d.getProduct().getDescription()+". Cost price must be positive a value.");
+			}
+			if(d.getQtyReceived() < 0) {
+				throw new InvalidEntryException("Could not process, invalid quantity at ["+d.getProduct().getCode()+"] "+d.getProduct().getDescription()+". Quantity must be positive a value.");
+			}
+			if(d.getQtyReceived() > d.getQtyOrdered()) {
+				throw new InvalidOperationException("Could not process, quantity received exceeds quantity ordered at ["+d.getProduct().getCode()+"] "+d.getProduct().getDescription());
+			}
+		}
+		/**
+		 * Passed all validation checks, 
+		 * now receive
+		 */
+		Optional<Lpo> l = lpoRepository.findById(grn.getLpo().getId());
+		if(l.isPresent()) {
+			l.get().setStatus("RECEIVED");
+			lpoRepository.saveAndFlush(l.get());
+		}		
+		grn.setStatus("RECEIVED");
+		grnRepository.saveAndFlush(grn);
+		for(GrnDetail d : details) {
+			/**
+			 * Update stocks
+			 * Create stock card
+			 * First, take initial stock value
+			 * Update stock
+			 * Add qty to initial stock value to obtain final stock value
+			 * Create stock card with the final stock value
+			 */
+			/**
+			 * Here, update stock card
+			 */
+			Product product =productRepository.findById(d.getProduct().getId()).get();
+			double stock = product.getStock() + d.getQtyReceived();
+			product.setStock(stock);
+			productRepository.saveAndFlush(product);
+			/**
+			 * Now create stock card
+			 */
+			ProductStockCard stockCard = new ProductStockCard();
+			stockCard.setQtyIn(d.getQtyReceived());
+			stockCard.setProduct(product);
+			stockCard.setBalance(stock);
+			stockCard.setDay(dayRepository.getCurrentBussinessDay());
+			stockCard.setReference("Goods received. Ref #: "+grn.getNo());
+			stockCardService.save(stockCard);
+		}
+		
+		
+		GrnModel model = new GrnModel();
+		Optional<Grn> g = grnRepository.findById(grn.getId());
+		if(!g.isPresent()) {
+			throw new NotFoundException("GRN not found");
+		}
+		model.setId(g.get().getId());
+		model.setNo(g.get().getNo());
+		model.setInvoiceNo(g.get().getInvoiceNo());
+		model.setInvoiceAmount(g.get().getInvoiceAmount());
+		model.setOrderNo(g.get().getOrderNo());
+		model.setStatus(g.get().getStatus());
+		model.setGrnDate(g.get().getGrnDate());		
+		model.setComments(g.get().getComments());
+		
+		if(g.get().getCreatedAt() != null && g.get().getCreatedBy() != null) {
+			model.setCreated(dayRepository.findById(g.get().getCreatedAt()).get().getBussinessDate() +" "+ userRepository.getAlias(g.get().getCreatedBy()));
+		}
+		if(g.get().getApprovedAt() != null && g.get().getApprovedBy() != null) {
+			model.setApproved(dayRepository.findById(g.get().getApprovedAt()).get().getBussinessDate() +" "+ userRepository.getAlias(g.get().getApprovedBy()));
+		}
+		List<GrnDetail> grnDetails = g.get().getGrnDetails();
+		List<GrnDetailModel> modelDetails = new ArrayList<GrnDetailModel>();
+		for(GrnDetail d : grnDetails) {
+			GrnDetailModel modelDetail = new GrnDetailModel();
+			modelDetail.setId(d.getId());
+			modelDetail.setProduct(d.getProduct());
+			modelDetail.setQtyOrdered(d.getQtyOrdered());
+			modelDetail.setQtyReceived(d.getQtyReceived());
+			modelDetail.setClientPriceVatIncl(d.getClientPriceVatIncl());
+			modelDetail.setClientPriceVatExcl(d.getClientPriceVatExcl());
+			modelDetail.setSupplierPriceVatIncl(d.getSupplierPriceVatIncl());
+			modelDetail.setSupplierPriceVatExcl(d.getSupplierPriceVatExcl());
+			modelDetails.add(modelDetail);
+		}
+		model.setGrnDetails(modelDetails);
+		return model;
+		
+	}
+
+	@Override
+	public boolean archive(Grn grn) {
+		if(!grn.getStatus().equals("RECEIVED")) {
+			throw new InvalidOperationException("Could not process, only a RECEIVED GRN can be archived");
+		}
+		grn.setStatus("ARCHIVED");
+		grnRepository.saveAndFlush(grn);
+		return true;
+	}
+
+	@Override
+	public boolean archiveAll() {
+		List<Grn> grns = grnRepository.findAllReceived("RECEIVED");
+		if(grns.isEmpty()) {
+			throw new NotFoundException("No GRN to archive");
+		}
+		for(Grn g : grns) {
+			g.setStatus("ARCHIVED");
+			grnRepository.saveAndFlush(g);
+		}
+		return true;
 	}
 
 }

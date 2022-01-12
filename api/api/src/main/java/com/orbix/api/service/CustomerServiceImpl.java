@@ -10,12 +10,10 @@ import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
 
+import com.orbix.api.accessories.Formater;
 import com.orbix.api.domain.Customer;
-import com.orbix.api.domain.Till;
 import com.orbix.api.exceptions.NotFoundException;
 import com.orbix.api.repositories.CustomerRepository;
-import com.orbix.api.repositories.TillRepository;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,7 +33,12 @@ public class CustomerServiceImpl implements CustomerService {
 	public Customer save(Customer customer) {
 		validateCustomer(customer);
 		log.info("Saving customer to the database");
-		return customerRepository.save(customer);
+		Customer c = customerRepository.saveAndFlush(customer);
+		if(c.getNo().equals("NA")) {
+			c.setNo(generateCustomerNo(c));
+			c = customerRepository.saveAndFlush(c);
+		}
+		return customerRepository.save(c);
 	}
 
 	@Override
@@ -81,6 +84,17 @@ public class CustomerServiceImpl implements CustomerService {
 		 * Put logic to allow till deletion, return false if not allowed, else return true
 		 */
 		return true;
+	}
+
+	@Override
+	public List<String> getNames() {
+		return customerRepository.getActiveNames();
+	}
+	
+	private String generateCustomerNo(Customer customer) {
+		Long number = customer.getId();		
+		String sNumber = number.toString();
+		return "CUS-"+Formater.formatSix(sNumber);
 	}
 
 }

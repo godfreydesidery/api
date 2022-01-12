@@ -5,6 +5,7 @@ package com.orbix.api.domain;
 
 import java.util.Collection;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -32,6 +33,10 @@ public class Customer {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	@NotBlank
+	@Column(unique = true)
+	private String no;
+	@NotBlank
+	@Column(unique = true)
 	private String name;
 	@NotBlank
 	private String contactName;
@@ -40,6 +45,7 @@ public class Customer {
 	private String vrn;
 	private double creditLimit = 0;
 	private double invoiceLimit = 0;
+	private double balance = 0;
 	private int creditDays = 1;
 	private String physicalAddress;
 	private String postCode;

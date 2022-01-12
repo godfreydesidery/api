@@ -7,7 +7,6 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.orbix.api.domain.LevelOne;
 import com.orbix.api.domain.LevelTwo;
 
 /**

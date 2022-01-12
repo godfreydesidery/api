@@ -5,6 +5,7 @@ package com.orbix.api.service;
 
 import java.util.List;
 
+import com.orbix.api.domain.Grn;
 import com.orbix.api.domain.Lpo;
 import com.orbix.api.domain.LpoDetail;
 import com.orbix.api.models.LpoDetailModel;
@@ -24,4 +25,6 @@ public interface LpoService {
 	LpoDetailModel getDetail(Long id);
 	boolean deleteDetail(LpoDetail lpoDetail);
 	List<LpoDetailModel>getAllDetails(Lpo lpo);	
+	boolean archive(Lpo lpo);
+	boolean archiveAll();
 }

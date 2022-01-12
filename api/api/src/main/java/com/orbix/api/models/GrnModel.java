@@ -19,6 +19,7 @@ public class GrnModel {
 	Long id = null;
 	String no;
 	String invoiceNo;
+	double invoiceAmount;
 	String orderNo;
 	Lpo lpo = null;
 	String status = "";

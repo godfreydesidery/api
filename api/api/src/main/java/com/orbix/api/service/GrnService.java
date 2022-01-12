@@ -23,4 +23,7 @@ public interface GrnService {
 	GrnDetailModel saveDetail(GrnDetail grnDetail);
 	GrnDetailModel getDetail(Long id);
 	List<GrnDetailModel>getAllDetails(Grn grn);	
+	GrnModel receive(Grn grn);
+	boolean archive(Grn grn);
+	boolean archiveAll();
 }

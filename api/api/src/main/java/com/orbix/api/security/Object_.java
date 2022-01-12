@@ -18,5 +18,11 @@ public class Object_ {
 	public static String PRODUCT = "PRODUCT";
 	public static String LPO = "LPO";
 	public static String GRN = "GRN";
+	public static String SALES_INVOICE = "SALES_INVOICE";
+	public static String QUOTATION = "QUOTATION";
+	public static String PACKING_LIST = "PACKING_LIST";
+	public static String SALES_RECEIPT = "SALES_RECEIPT";
+	public static String ALLOCATION = "ALLOCATION";
+	public static String MATERIAL = "MATERIAL";
 	
 }

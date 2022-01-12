@@ -10,7 +10,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import com.orbix.api.domain.Lpo;
-import com.orbix.api.domain.LpoDetail;
 
 /**
  * @author GODFREY
@@ -29,4 +28,7 @@ public interface LpoRepository extends JpaRepository<Lpo, Long> {
 	
 	@Query("SELECT l FROM Lpo l WHERE l.status IN (:statuses)")
 	List<Lpo> findAllVissible(List<String> statuses);
+	
+	@Query("SELECT l FROM Lpo l WHERE l.status =:status")
+	List<Lpo> findAllReceived(String status);
 }

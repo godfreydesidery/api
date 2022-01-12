@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.orbix.api.domain.Grn;
 import com.orbix.api.domain.Lpo;
 import com.orbix.api.domain.LpoDetail;
 import com.orbix.api.domain.Product;
@@ -97,7 +98,7 @@ public class LpoResource {
 		Lpo l = new Lpo();
 		l.setNo("NA");
 		l.setSupplier(s.get());
-		l.setStatus("PENDING");
+		l.setStatus("BLANK");
 		l.setOrderDate(lpo.getOrderDate());
 		l.setValidityDays(lpo.getValidityDays());
 		l.setValidUntil(lpo.getValidUntil());
@@ -204,22 +205,23 @@ public class LpoResource {
 	}
 	
 	@PutMapping("/lpos/archive")
-	public ResponseEntity<LpoModel>archiveLpo(
+	@PreAuthorize("hasAnyAuthority('LPO-CREATE','LPO-UPDATE','LPO-ARCHIVE')")
+	public ResponseEntity<Boolean>archiveLpo(
 			@RequestBody Lpo lpo,
 			HttpServletRequest request){		
 		Optional<Lpo> l = lpoRepository.findById(lpo.getId());
 		if(!l.isPresent()) {
 			throw new NotFoundException("LPO not found");
 		}
-		if(l.get().getStatus().equals("RECEIVED")) {
-			l.get().setPrintedBy(userService.getUserId(request));
-			l.get().setPrintedAt(dayService.getDayId());
-			l.get().setStatus("ARCHIVED");
-		}else {
-			throw new InvalidOperationException("Could not archive, LPO not received");
-		}
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/lpos/archive").toUriString());
-		return ResponseEntity.created(uri).body(lpoService.save(l.get()));
+		return ResponseEntity.created(uri).body(lpoService.archive(l.get()));
+	}
+	
+	@PutMapping("/lpos/archive_all")
+	@PreAuthorize("hasAnyAuthority('LPO-CREATE','LPO-UPDATE','LPO-ARCHIVE')")
+	public ResponseEntity<Boolean>archiveLpos(){			
+		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/lpos/archive_all").toUriString());
+		return ResponseEntity.created(uri).body(lpoService.archiveAll());
 	}
 	
 	@PostMapping("/lpo_details/save")
@@ -233,8 +235,12 @@ public class LpoResource {
 		if(!l.isPresent()) {
 			throw new NotFoundException("LPO not found");
 		}
-		if(!l.get().getStatus().equals("PENDING")) {
-			throw new InvalidOperationException("Editing is not allowed, only Pending LPOs can be edited.");
+		if(l.get().getStatus().equals("BLANK")) {
+			l.get().setStatus("PENDING");
+			lpoRepository.saveAndFlush(l.get());
+		}
+		if(!(l.get().getStatus().equals("PENDING") || l.get().getStatus().equals("BLANK"))) {
+			throw new InvalidOperationException("Editing is not allowed, only PENDING or BLANK LPOs can be edited.");
 		}
 		Optional<Product> p = productRepository.findById(lpoDetail.getProduct().getId());
 		if(!p.isPresent()) {
@@ -318,7 +324,7 @@ public class LpoResource {
 		Lpo lpo = d.get().getLpo();
 		if(!lpo.getStatus().equals("PENDING")) {
 			throw new InvalidOperationException("Editing not allowed, only pending LPO can be edited");
-		}
+		}		
 		lpoDetailRepository.delete(d.get());		
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/lpo_details/delete").toUriString());
 		return ResponseEntity.created(uri).body(true);

@@ -48,10 +48,11 @@ public class Grn {
 	private LocalDate grnDate;
 	@Column(unique = true)
 	private String orderNo;
-	private String invoiceNo;
+	private double invoiceAmount = 0;
+	private String invoiceNo;	
 	private String status;	
 	private String comments;
-	
+		
 	private Long createdBy;
 	private Long createdAt;
 	private Long approvedBy;	

@@ -16,5 +16,6 @@ public interface CustomerService {
 	Customer get(Long id);
 	Customer getByName(String name);
 	boolean delete(Customer customer);
-	List<Customer>getAll(); //edit this to limit the number, for perfomance.	
+	List<Customer>getAll(); //edit this to limit the number, for perfomance.
+	List<String> getNames();
 }
