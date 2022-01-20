@@ -61,6 +61,7 @@ public class TillResource {
 	@PreAuthorize("hasAnyAuthority('TILL-CREATE')")
 	public ResponseEntity<Till>createTill(
 			@RequestBody Till till){
+		till.setActive(true);
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/tills/create").toUriString());
 		return ResponseEntity.created(uri).body(tillService.saveTill(till));
 	}
@@ -81,6 +82,26 @@ public class TillResource {
 		Till till = tillService.getTill(id);
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/tills/delete").toUriString());
 		return ResponseEntity.created(uri).body(tillService.deleteTill(till));
+	}
+	
+	@PostMapping("/tills/activate")
+	//@PreAuthorize("hasAnyAuthority('TILL-DELETE')")
+	public ResponseEntity<Till> activateTill(
+			@RequestParam(name = "id") Long id){
+		Till till = tillService.getTill(id);
+		till.setActive(true);
+		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/tills/activate").toUriString());
+		return ResponseEntity.created(uri).body(tillService.saveTill(till));
+	}
+	
+	@PostMapping("/tills/deactivate")
+	//@PreAuthorize("hasAnyAuthority('TILL-DELETE')")
+	public ResponseEntity<Till> deactivateTill(
+			@RequestParam(name = "id") Long id){
+		Till till = tillService.getTill(id);
+		till.setActive(false);
+		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/tills/deactivate").toUriString());
+		return ResponseEntity.created(uri).body(tillService.saveTill(till));
 	}
 
 }

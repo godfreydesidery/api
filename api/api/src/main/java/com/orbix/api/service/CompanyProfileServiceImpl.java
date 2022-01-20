@@ -37,16 +37,39 @@ public class CompanyProfileServiceImpl implements CompanyProfileService {
 	public CompanyProfile saveCompanyProfile(CompanyProfile companyProfile) {
 		List<CompanyProfile> profiles = companyProfileRepository.findAll();
 		int i = 0;
+		CompanyProfile profile = new CompanyProfile();
 		for(CompanyProfile p : profiles) {
 			i = i + 1;
+			profile = p;
 		}
 		if(validateCompany(companyProfile)) {
 			if(i > 1) {
 				companyProfileRepository.deleteAll();
 			}else if(companyProfile.getId() == null) {
 				companyProfileRepository.deleteAll();
-			}	
-			return companyProfileRepository.saveAndFlush(companyProfile);
+			}
+			if(i == 1) {
+				profile.setCompanyName(companyProfile.getCompanyName());
+				profile.setContactName(companyProfile.getContactName());
+				profile.setTin(companyProfile.getTin());
+				profile.setVrn(companyProfile.getVrn());
+				profile.setPhysicalAddress(companyProfile.getPhysicalAddress());
+				profile.setPostCode(companyProfile.getPostCode());
+				profile.setPostAddress(companyProfile.getPostAddress());
+				profile.setTelephone(companyProfile.getTelephone());
+				profile.setMobile(companyProfile.getMobile());
+				profile.setEmail(companyProfile.getEmail());
+				profile.setFax(companyProfile.getFax());
+				profile.setBankAccountName(companyProfile.getBankAccountName());
+				profile.setBankPhysicalAddress(companyProfile.getBankPhysicalAddress());
+				profile.setBankPostAddress(companyProfile.getBankPostAddress());
+				profile.setBankPostCode(companyProfile.getBankPostCode());
+				profile.setBankName(companyProfile.getBankName());
+				profile.setBankAccountNo(companyProfile.getBankAccountNo());
+			}else {
+				profile = companyProfile;
+			}
+			return companyProfileRepository.saveAndFlush(profile);
 		}else {
 			throw new InvalidEntryException("Invalid company information");
 		}
@@ -88,5 +111,10 @@ public class CompanyProfileServiceImpl implements CompanyProfileService {
         }
         return outputStream.toByteArray();
     }
+	
+	@Override
+	public boolean hasData() {
+		return companyProfileRepository.hasData();
+	}
 
 }

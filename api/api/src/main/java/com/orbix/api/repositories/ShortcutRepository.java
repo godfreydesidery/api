@@ -30,6 +30,13 @@ public interface ShortcutRepository extends JpaRepository<Shortcut, Long> {
 	 */
 	List<Shortcut> findByUser(User user);
 
+	/**
+	 * @param name
+	 * @param user
+	 * @return
+	 */
+	Optional<Shortcut> findByNameAndUser(String name, User user);
+
 	
 
 }

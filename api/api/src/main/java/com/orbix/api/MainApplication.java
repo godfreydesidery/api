@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Scanner;
 import java.util.TimeZone;
 
 import javax.annotation.PostConstruct;
@@ -36,14 +37,18 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupp
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
+import org.thymeleaf.util.StringUtils;
 
+import com.orbix.api.domain.CompanyProfile;
 import com.orbix.api.domain.Day;
 import com.orbix.api.domain.Privilege;
 import com.orbix.api.domain.Role;
 import com.orbix.api.domain.User;
+import com.orbix.api.repositories.CompanyProfileRepository;
 import com.orbix.api.repositories.DayRepository;
 import com.orbix.api.security.Object_;
 import com.orbix.api.security.Operation;
+import com.orbix.api.service.CompanyProfileService;
 import com.orbix.api.service.DayService;
 import com.orbix.api.service.MaterialServiceImpl;
 import com.orbix.api.service.UserService;
@@ -66,6 +71,7 @@ public class MainApplication {
 protected ConfigurableApplicationContext springContext;
 
     DayRepository dayRepository;
+    CompanyProfileRepository companyProfileRepository;
     
     @Bean
     public CorsFilter corsFilter() {
@@ -97,8 +103,14 @@ protected ConfigurableApplicationContext springContext;
 	}
 	
 	@Bean
-	CommandLineRunner run(UserService userService, DayService dayService) {
+	CommandLineRunner run(UserService userService, DayService dayService, CompanyProfileService companyProfileService) {
 		return args -> {
+			if(!companyProfileService.hasData()) {
+				log.info("Creating mock company");
+				CompanyProfile company = new CompanyProfile(null, "Company Name","Contact Name", null, "NAN", "NAN", "NAN", "NAN", "NAN", "NAN", "NAN", "NAN", "NAN", "NAN", "NAN", "NAN", "NAN", "NAN", "NAN");
+				companyProfileService.saveCompanyProfile(company);
+			}
+			
 			if(!dayService.hasData()) {
 				/**
 				 * Creating the first day
@@ -111,7 +123,6 @@ protected ConfigurableApplicationContext springContext;
 			}catch(Exception e) {}	
 			try {
 				userService.saveUser(new User(null, "root", "r00tpA55w0Rd", null, null, "root@NAN", "Root", "Root", "Root", "Root @ Root", true, null,new ArrayList<>()));
-				userService.saveUser(new User(null, "grasiana", "r00tpA55w0Rd", null, null, "1234", "	grasiana", "Root", "Shirima", "Grasiana Shirima", true, null,new ArrayList<>()));
 			}catch(Exception e) {}		
 			try {
 				userService.addRoleToUser("root", "ROOT");
@@ -120,14 +131,39 @@ protected ConfigurableApplicationContext springContext;
 			Field[] objectFields = Object_.class.getDeclaredFields();
 			Field[] operationFields = Operation.class.getDeclaredFields();
 			for(int i = 0; i < objectFields.length; i++) {
+				String objectWithProhibition = objectFields[i].get(objectFields[i].getName()).toString();
+				String prohibitedSequence = "";
+				String object = "";
+				if(objectWithProhibition.contains("-")) {								        
+					prohibitedSequence = objectWithProhibition.substring(objectWithProhibition.lastIndexOf("-") + 1);
+				}else {
+					prohibitedSequence = "";
+				}
+				if(prohibitedSequence.equals("")) {
+					object = objectWithProhibition;
+				}else {
+					object = objectWithProhibition.substring(0, objectWithProhibition.indexOf("-"));
+				}
+				List<String> prohibitedOperations = new ArrayList<>();
+				Scanner sc = new Scanner(prohibitedSequence);
+				if(!prohibitedSequence.equals("")) {
+					while (sc.hasNext()) {
+						prohibitedOperations.add(sc.next());						
+					}
+					sc.close();
+				}
 				for(int j = 0; j < operationFields.length; j++) {
 					Privilege privilege = new Privilege();
-					privilege.setName(objectFields[i].getName()+"-"+operationFields[j].getName());
-					try {
-						userService.savePrivilege(privilege);
-					}catch(Exception e) {
-						System.out.println("Could not save privilege");
-					}
+					
+					//privilege.setName(objectFields[i].getName()+"-"+operationFields[j].getName());
+					if(!prohibitedOperations.contains(operationFields[j].getName().toString())) {
+						privilege.setName(object+"-"+operationFields[j].getName());
+						try {
+							userService.savePrivilege(privilege);
+						}catch(Exception e) {
+							System.out.println("Could not save privilege");
+						}
+					}										
 				}
 			}
 			try {

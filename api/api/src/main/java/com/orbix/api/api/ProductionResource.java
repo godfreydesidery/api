@@ -97,7 +97,27 @@ public class ProductionResource {
 		production.setOpenedBy(userService.getUserId(request));
 		production.setOpenedAt(dayRepository.getCurrentBussinessDay().getId());
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/productions/create").toUriString());
-		return ResponseEntity.created(uri).body(productionService.create(production));
+		return ResponseEntity.created(uri).body(productionService.save(production));
+	}
+	
+	@PostMapping("/productions/update")
+	//@PreAuthorize("hasAnyAuthority('PRODUCTION-CREATE')")
+	public ResponseEntity<ProductionModel>updateProduction(
+			@RequestBody Production production,
+			HttpServletRequest request){
+		Optional<Production> prod = productionRepository.findById(production.getId());
+		if(!prod.isPresent()) {
+			throw new InvalidOperationException("Production could not be found in database");
+		}
+		if(!prod.get().getStatus().equals("OPEN")) {
+			throw new InvalidOperationException("Could not edit, only open production can be edited");
+		}
+		prod.get().setProductionName(production.getProductionName());
+		prod.get().setBatchNo(production.getBatchNo());
+		prod.get().setBatchSize(production.getBatchSize());
+		prod.get().setUom(production.getUom());
+		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/productions/update").toUriString());
+		return ResponseEntity.created(uri).body(productionService.save(prod.get()));
 	}
 	
 	@PostMapping("/productions/close")

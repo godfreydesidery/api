@@ -58,6 +58,13 @@ public class SupplierResource {
 		return ResponseEntity.ok().body(supplierService.get(id));
 	}
 	
+	@GetMapping("/suppliers/get_by_code")
+	@PreAuthorize("hasAnyAuthority('SUPPLIER-READ')")
+	public ResponseEntity<Supplier> getSupplierByCode(
+			@RequestParam(name = "code") String code){
+		return ResponseEntity.ok().body(supplierService.getByCode(code));
+	}
+	
 	@GetMapping("/suppliers/get_by_name")
 	@PreAuthorize("hasAnyAuthority('SUPPLIER-READ')")
 	public ResponseEntity<Supplier> getSupplierByName(
@@ -65,10 +72,15 @@ public class SupplierResource {
 		return ResponseEntity.ok().body(supplierService.getByName(name));
 	}
 	
+	
+	
 	@PostMapping("/suppliers/create")
 	@PreAuthorize("hasAnyAuthority('SUPPLIER-CREATE')")
 	public ResponseEntity<Supplier>createSupplier(
 			@RequestBody Supplier supplier){
+		if(supplier.getCode().equals("")) {
+			supplier.setCode("NA");
+		}
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/suppliers/create").toUriString());
 		return ResponseEntity.created(uri).body(supplierService.save(supplier));
 	}

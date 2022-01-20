@@ -56,6 +56,13 @@ public class CustomerResource {
 		return ResponseEntity.ok().body(customerService.get(id));
 	}
 	
+	@GetMapping("/customers/get_by_no")
+	@PreAuthorize("hasAnyAuthority('CUSTOMER-READ')")
+	public ResponseEntity<Customer> getCustomerByNo(
+			@RequestParam(name = "no") String no){
+		return ResponseEntity.ok().body(customerService.getByNo(no));
+	}
+	
 	@GetMapping("/customers/get_by_name")
 	@PreAuthorize("hasAnyAuthority('CUSTOMER-READ')")
 	public ResponseEntity<Customer> getCustomerByName(

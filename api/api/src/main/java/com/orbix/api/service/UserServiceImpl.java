@@ -246,7 +246,12 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 					e.printStackTrace();
 				}
 				if(!value.equals("")) {
-					objects.add(value);
+					if(value.contains("-")) {
+						objects.add(value.substring(0, value.indexOf("-")));
+					}else {
+						objects.add(value);
+					}
+					
 				}			
 			}
 		}
@@ -291,6 +296,23 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 				shortcutRepository.save(shortcut);
 			}else {
 				throw new DuplicateEntryException("Could not save shortcut, shortcut already exist");
+			}
+		}catch(Exception e) {
+			return false;
+		}
+		return true;
+	}
+	
+	@Override
+	public boolean removeShortcut(String username, String name) {			
+		try {
+			User user = userRepository.findByUsername(username);
+			
+			Optional<Shortcut> shortcut = shortcutRepository.findByNameAndUser(name, user);
+			if(shortcut.isPresent()) {
+				shortcutRepository.delete(shortcut.get());
+			}else {
+				throw new DuplicateEntryException("Could not remove shortcut, shortcut does not exist");
 			}
 		}catch(Exception e) {
 			return false;

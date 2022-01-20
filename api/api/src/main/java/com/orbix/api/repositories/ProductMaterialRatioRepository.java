@@ -29,7 +29,7 @@ public interface ProductMaterialRatioRepository extends JpaRepository<ProductMat
 	 * @param product
 	 * @return
 	 */
-	List<Product> findByProduct(Product product);
+	Optional<ProductMaterialRatio> findByProduct(Product product);
 
 	/**
 	 * @param material

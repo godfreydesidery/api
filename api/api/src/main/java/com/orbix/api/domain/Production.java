@@ -39,6 +39,8 @@ public class Production {
 	@Column(unique = true)
 	private String no;
 	private String productionName;
+	@Column(unique = true)
+	private String batchNo;
 	private double batchSize;
 	private String uom;
 	private String status;

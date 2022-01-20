@@ -86,6 +86,7 @@ public class ProductionServiceImpl implements ProductionService {
 		model.setId(prod.get().getId());
 		model.setNo(prod.get().getNo());
 		model.setProductionName(prod.get().getProductionName());
+		model.setBatchNo(prod.get().getBatchNo());
 		model.setBatchSize(prod.get().getBatchSize());
 		model.setStatus(prod.get().getStatus());
 		model.setComments(prod.get().getComments());
@@ -167,6 +168,8 @@ public class ProductionServiceImpl implements ProductionService {
 		}
 		model.setId(prod.get().getId());
 		model.setNo(prod.get().getNo());
+		model.setProductionName(prod.get().getProductionName());
+		model.setBatchNo(prod.get().getBatchNo());
 		model.setBatchSize(prod.get().getBatchSize());
 		model.setStatus(prod.get().getStatus());
 		model.setComments(prod.get().getComments());
@@ -236,9 +239,9 @@ public class ProductionServiceImpl implements ProductionService {
 	}
 	
 	@Override
-	public ProductionModel create(Production production) {
+	public ProductionModel save(Production production) {
 		if(!validate(production)) {
-			throw new InvalidEntryException("Could not create production");
+			throw new InvalidEntryException("Could not save production");
 		}
 		Production prod = productionRepository.save(production);
 		if(prod.getNo().equals("NA")) {
@@ -249,6 +252,7 @@ public class ProductionServiceImpl implements ProductionService {
 		model.setId(prod.getId());
 		model.setNo(prod.getNo());
 		model.setProductionName(prod.getProductionName());
+		model.setBatchNo(prod.getBatchNo());
 		model.setBatchSize(prod.getBatchSize());
 		model.setUom(prod.getUom());
 		model.setStatus(prod.getStatus());
@@ -293,6 +297,7 @@ public class ProductionServiceImpl implements ProductionService {
 		model.setId(prod.getId());
 		model.setNo(prod.getNo());
 		model.setProductionName(prod.getProductionName());
+		model.setBatchNo(prod.getBatchNo());
 		model.setBatchSize(prod.getBatchSize());
 		model.setUom(prod.getUom());
 		model.setStatus(prod.getStatus());
@@ -342,6 +347,7 @@ public class ProductionServiceImpl implements ProductionService {
 		model.setId(prod.getId());
 		model.setNo(prod.getNo());
 		model.setProductionName(prod.getProductionName());
+		model.setBatchNo(prod.getBatchNo());
 		model.setBatchSize(prod.getBatchSize());
 		model.setUom(prod.getUom());
 		model.setStatus(prod.getStatus());

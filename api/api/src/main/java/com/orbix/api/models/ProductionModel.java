@@ -16,6 +16,7 @@ public class ProductionModel {
 	Long id = null;
 	String no = "";
 	String productionName = "";
+	String batchNo = "";
 	double batchSize = 0;
 	String uom = "";
 	String status = "";	

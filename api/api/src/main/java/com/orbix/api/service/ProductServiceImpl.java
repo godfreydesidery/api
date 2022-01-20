@@ -144,6 +144,9 @@ public class ProductServiceImpl implements ProductService {
 			product.setLevelFour(null);
 		}
 		
+		//Check if product exists, if no, stock card, put opening balance, else stock card put new updated balance
+		
+		
 		if(validate(product)) {
 			//Continue, else throw validation error
 		}

@@ -64,6 +64,17 @@ public class ProductMaterialRatioResource {
 		return ResponseEntity.ok().body(productMaterialRatioService.get(id));
 	}
 	
+	@GetMapping("/product_material_ratios/get_by_product")
+	//@PreAuthorize("hasAnyAuthority('PACKING_LIST-READ')")
+	public ResponseEntity<ProductMaterialRatioModel> getProductMaterialRatioByProduct(
+			@RequestParam(name = "id") Long id){
+		Optional<Product> prod = productRepository.findById(id);
+		if(!prod.isPresent()) {
+			throw new NotFoundException("Product not found");
+		}
+		return ResponseEntity.ok().body(productMaterialRatioService.getByProduct(prod.get()));
+	}
+	
 	@PostMapping("/product_material_ratios/create")
 	//@PreAuthorize("hasAnyAuthority('PRODUCTION-CREATE')")
 	public ResponseEntity<ProductMaterialRatioModel>createProductMaterialRatio(
@@ -81,8 +92,8 @@ public class ProductMaterialRatioResource {
 		if(pmr.isPresent()) {
 			throw new NotFoundException("Ratio already exists, consider editing the respective ratio.");
 		}
-		List<Product> product = productMaterialRatioRepository.findByProduct(prod.get());
-		if(!product.isEmpty()) {
+		Optional<ProductMaterialRatio> product = productMaterialRatioRepository.findByProduct(prod.get());
+		if(!product.isPresent()) {
 			throw new InvalidOperationException("The product already exist in the list. Please consider editing the ratio");
 		}
 		List<Material> material = productMaterialRatioRepository.findByMaterial(mat.get());

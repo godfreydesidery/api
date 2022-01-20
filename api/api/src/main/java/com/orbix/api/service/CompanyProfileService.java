@@ -12,4 +12,5 @@ import com.orbix.api.domain.CompanyProfile;
 public interface CompanyProfileService {
 	CompanyProfile saveCompanyProfile(CompanyProfile companyProfile);
 	CompanyProfile getCompanyProfile();
+	boolean hasData();
 }

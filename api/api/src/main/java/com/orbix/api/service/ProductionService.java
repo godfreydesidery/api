@@ -20,7 +20,7 @@ import com.orbix.api.models.ProductionUnverifiedProductModel;
 public interface ProductionService {
 	public ProductionModel get(Long id);
 	public ProductionModel getByNo(String no);
-	public ProductionModel create(Production production);
+	public ProductionModel save(Production production);
 	public ProductionModel close(Production production);
 	public ProductionModel cancel(Production production);
 	public ProductionUnverifiedMaterialModel addMaterial(Production production, Material material, double qty);

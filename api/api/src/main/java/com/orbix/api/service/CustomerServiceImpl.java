@@ -45,6 +45,15 @@ public class CustomerServiceImpl implements CustomerService {
 	public Customer get(Long id) {
 		return customerRepository.findById(id).get();
 	}
+	
+	@Override
+	public Customer getByNo(String no) {
+		Optional<Customer> customer = customerRepository.findByNo(no);
+		if(!customer.isPresent()) {
+			throw new NotFoundException("Customer not found");
+		}
+		return customer.get();
+	}
 
 	@Override
 	public Customer getByName(String name) {

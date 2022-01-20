@@ -10,6 +10,8 @@ import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
 
+import com.orbix.api.accessories.Formater;
+import com.orbix.api.domain.SalesInvoice;
 import com.orbix.api.domain.Supplier;
 import com.orbix.api.exceptions.NotFoundException;
 import com.orbix.api.repositories.SupplierRepository;
@@ -32,13 +34,27 @@ public class SupplierServiceImpl implements SupplierService {
 	@Override
 	public Supplier save(Supplier supplier) {
 		validateSupplier(supplier);
-		log.info("Saving customer to the database");
+		Supplier sup = supplierRepository.save(supplier);
+		if(sup.getCode().equals("NA")) {
+			sup.setCode(generateSupplierCode(sup));
+			sup = supplierRepository.save(sup);
+		}	
+		log.info("Saving customer to database");
 		return supplierRepository.save(supplier);
 	}
 
 	@Override
 	public Supplier get(Long id) {
 		return supplierRepository.findById(id).get();
+	}
+	
+	@Override
+	public Supplier getByCode(String code) {
+		Optional<Supplier> supplier = supplierRepository.findByCode(code);
+		if(!supplier.isPresent()) {
+			throw new NotFoundException("Supplier not found");
+		}
+		return supplier.get();
 	}
 
 	@Override
@@ -84,6 +100,12 @@ public class SupplierServiceImpl implements SupplierService {
 	@Override
 	public List<String> getNames() {
 		return supplierRepository.getActiveNames();
+	}
+	
+	private String generateSupplierCode(Supplier supplier) {
+		Long number = supplier.getId();		
+		String sNumber = number.toString();
+		return "SPL-"+Formater.formatSix(sNumber);
 	}
 
 

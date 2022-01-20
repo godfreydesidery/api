@@ -64,6 +64,7 @@ public class Product {
 	private double defaultReorderLevel = 0;
 	private boolean active = true;
 	private boolean sellable = true;
+	private String ingredients = "";
 	
 	
 	@ManyToOne(targetEntity = Supplier.class, fetch = FetchType.EAGER,  optional = true)
@@ -118,6 +119,5 @@ public class Product {
 	@ManyToOne(targetEntity = LevelFour.class, fetch = FetchType.EAGER,  optional = true)
     @JoinColumn(name = "level_four_id", nullable = true , updatable = true)
     @OnDelete(action = OnDeleteAction.NO_ACTION)	
-    private LevelFour levelFour;
-	
+    private LevelFour levelFour;	
 }

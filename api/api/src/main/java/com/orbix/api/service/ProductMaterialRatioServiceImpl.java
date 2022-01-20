@@ -104,5 +104,24 @@ public class ProductMaterialRatioServiceImpl implements ProductMaterialRatioServ
 		productMaterialRatioRepository.delete(pmr.get());		
 		return true;
 	}
+
+	@Override
+	public ProductMaterialRatioModel getByProduct(Product product) {
+		ProductMaterialRatioModel model = new ProductMaterialRatioModel();
+		Optional<ProductMaterialRatio> pmr = productMaterialRatioRepository.findByProduct(product);
+		if(!pmr.isPresent()) {
+			throw new NotFoundException("Ratio not found");
+		}
+		model.setId(pmr.get().getId());
+		model.setProduct(pmr.get().getProduct());
+		model.setMaterial(pmr.get().getMaterial());
+		model.setRatio(pmr.get().getRatio());
+		
+		
+		if(pmr.get().getCreatedAt() != null && pmr.get().getCreatedBy() != null) {
+			model.setCreated(dayRepository.findById(pmr.get().getCreatedAt()).get().getBussinessDate() +" "+ userRepository.getAlias(pmr.get().getCreatedBy()));
+		}	
+		return model;
+	}
 	
 }

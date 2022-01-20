@@ -46,7 +46,7 @@ public class CompanyProfileResource {
 	}
 	
 	@PostMapping("/company_profile/save")
-	@PreAuthorize("hasAnyAuthority('COMPANY_PROFILE-CREATE')")
+	//@PreAuthorize("hasAnyAuthority('COMPANY_PROFILE-CREATE')")
 	public ResponseEntity<CompanyProfile>saveCompanyProfile(
 			@RequestBody CompanyProfile profile){
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/company_profile/save").toUriString());
@@ -54,7 +54,7 @@ public class CompanyProfileResource {
 	}
 	
 	@PostMapping("/company_profile/save_logo")
-	@PreAuthorize("hasAnyAuthority('COMPANY_PROFILE-CREATE')")
+	//@PreAuthorize("hasAnyAuthority('COMPANY_PROFILE-CREATE')")
 	public ResponseEntity<CompanyProfile> saveCompanyLogo(
 			@RequestParam("logo") MultipartFile logo) throws IOException{
 		CompanyProfile profile = companyProfileService.getCompanyProfile();

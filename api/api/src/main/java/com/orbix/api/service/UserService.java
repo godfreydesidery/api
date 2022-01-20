@@ -35,6 +35,7 @@ public interface UserService {
 	List<String>getObjects();
 	List<String>getPrivileges(String roleName);
 	boolean createShortcut(String username, String name, String link);
+	boolean removeShortcut(String username, String name);
 	List<Shortcut> loadShortcuts(String username);
 	
 	Long getUserId(HttpServletRequest request);

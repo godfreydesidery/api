@@ -4,13 +4,17 @@
 package com.orbix.api.api;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -46,6 +50,8 @@ import com.orbix.api.domain.User;
 import com.orbix.api.exceptions.InvalidOperationException;
 import com.orbix.api.repositories.PrivilegeRepository;
 import com.orbix.api.repositories.RoleRepository;
+import com.orbix.api.security.Object_;
+import com.orbix.api.security.Operation;
 import com.orbix.api.service.UserService;
 
 import lombok.AllArgsConstructor;
@@ -274,12 +280,26 @@ public class UserResource {
 		return ResponseEntity.ok().body(modelList);
 	}
 	
+	@GetMapping("/check_op_valid")
+	public boolean checkOpValid(
+			@RequestParam(name = "object") String obj,
+			@RequestParam(name = "operation") String op){
+		String privilege = obj + "-" + op;
+		Optional<Privilege> p = privilegeRepository.findByName(privilege);
+		if(p.isPresent()) {
+			return true;
+		}else {
+			return false;
+		}
+	}
+	
 	@PostMapping("/privileges/addtorole")
 	@PreAuthorize("hasAnyAuthority('ROLE-UPDATE')")
 	public boolean addPrivilegeToRole(
 			@RequestBody AccessModel form){	
 		Role role = roleRepository.findByName(form.getRole());
 		Collection<Privilege> privileges = new ArrayList<>(role.getPrivileges());
+		
 		for(Privilege p : privileges) {
 			userService.removePrivilegeFromRole(role.getName(), p.getName());
 		}
@@ -308,10 +328,15 @@ public class UserResource {
 			@RequestParam String name,
 			@RequestParam String link){
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/shortcuts/create").toUriString());
-		for(int i =0; i<100;i++) {
-			System.out.println(i);
-		}
 		return ResponseEntity.created(uri).body(userService.createShortcut(username, name, link));
+	}
+	
+	@PostMapping("/shortcuts/remove")	
+	public ResponseEntity<Boolean> removeShortcut(
+			@RequestParam String username,
+			@RequestParam String name){
+		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/shortcuts/remove").toUriString());		
+		return ResponseEntity.created(uri).body(userService.removeShortcut(username, name));
 	}
 	
 	@GetMapping("/shortcuts/load")
@@ -328,6 +353,68 @@ public class UserResource {
 		DecodedJWT decodedJWT = verifier.verify(token);
 		String username = decodedJWT.getSubject();
 		return username;
+	}
+	
+	@GetMapping("/load_privilege_model")
+	public List<AuthorityModel> loadAuthModels() {
+		List<AuthorityModel> models = new ArrayList<>();
+		
+		List<String> objects = new ArrayList<String>();
+		for(Field field : Object_.class.getDeclaredFields()) {
+			int modifiers = field.getModifiers();
+			if(Modifier.isStatic(modifiers)) {
+				String value = "";
+				try {
+					value = Object_.class.getDeclaredField(field.getName()).get(null).toString();
+				} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException
+						| SecurityException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				if(!value.equals("")) {
+					if(value.contains("-")) {
+						objects.add(value.substring(0, value.indexOf("-")));
+					}else {
+						objects.add(value);
+					}
+					
+				}			
+			}
+		}
+		
+		List<String> operations = new ArrayList<String>();
+		for(Field field : Operation.class.getDeclaredFields()) {
+			int modifiers = field.getModifiers();
+			if(Modifier.isStatic(modifiers)) {
+				String value = "";
+				try {
+					value = Operation.class.getDeclaredField(field.getName()).get(null).toString();
+				} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException
+						| SecurityException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				if(!value.equals("")) {
+					operations.add(value);
+				}			
+			}
+		}
+		
+		for(String object : objects) {
+			AuthorityModel m = new AuthorityModel();
+			m.setObject(object);
+			List<String> s = new ArrayList<>();
+			for(String operation : operations) {				
+				String privilege = object+"-"+operation;
+				Optional<Privilege> p =privilegeRepository.findByName(privilege);
+				if(p.isPresent()) {
+					s.add(operation);
+				}
+			}
+			m.setOperations(s);
+			models.add(m);
+		}		
+		return models;
 	}
 }
  
@@ -369,6 +456,14 @@ class ObjectModel{
 class UserModel{
 	Long id;
 	String alias;	
+}
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+class AuthorityModel{
+	String object;
+	List<String> operations;
 }
 
 
