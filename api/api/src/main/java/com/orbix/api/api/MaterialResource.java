@@ -6,6 +6,7 @@ package com.orbix.api.api;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -22,6 +23,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.orbix.api.domain.Material;
+import com.orbix.api.exceptions.NotFoundException;
+import com.orbix.api.repositories.MaterialRepository;
 import com.orbix.api.service.MaterialService;
 import lombok.RequiredArgsConstructor;
 
@@ -34,7 +37,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MaterialResource {
 	
-private final 	MaterialService materialService;
+private final MaterialService materialService;
+private final MaterialRepository materialRepository;
 	
 	@GetMapping("/materials")
 	@PreAuthorize("hasAnyAuthority('MATERIAL-READ')")
@@ -83,6 +87,21 @@ private final 	MaterialService materialService;
 	public ResponseEntity<Material>updateMaterial(
 			@RequestBody Material material, 
 			HttpServletRequest request){
+		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/materials/update").toUriString());
+		return ResponseEntity.created(uri).body(materialService.save(material));
+	}
+	
+	@PutMapping("/materials/update_by_code")
+	@PreAuthorize("hasAnyAuthority('MATERIAL-UPDATE')")
+	public ResponseEntity<Material>updateMaterialByCode(
+			@RequestBody Material material, 
+			HttpServletRequest request){
+		Optional<Material> mat = materialRepository.findByCode(material.getCode());
+		if(mat.isPresent()) {
+			material.setId(mat.get().getId());
+		}else {
+			throw new NotFoundException("Material not found");
+		}
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/materials/update").toUriString());
 		return ResponseEntity.created(uri).body(materialService.save(material));
 	}

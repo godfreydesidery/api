@@ -21,6 +21,7 @@ public class Object_ {
 	public static String TILL = "TILL-APPROVE PRINT CANCEL";
 	public static String COMPANY_PROFILE = "COMPANY_PROFILE-DELETE ACTIVATE APPROVE PRINT CANCEL";
 	public static String CUSTOMER = "CUSTOMER-APPROVE PRINT CANCEL";
+	public static String EMPLOYEE = "EMPLOYEE-APPROVE PRINT CANCEL";
 	public static String SUPPLIER = "SUPPLIER-APPROVE PRINT CANCEL";
 	public static String PRODUCT = "PRODUCT-APPROVE PRINT CANCEL";
 	public static String LPO = "LPO-ACTIVATE";

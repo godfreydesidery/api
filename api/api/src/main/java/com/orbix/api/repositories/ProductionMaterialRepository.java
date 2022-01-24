@@ -31,4 +31,14 @@ public interface ProductionMaterialRepository extends JpaRepository<ProductionMa
 	 */
 	Optional<ProductionMaterial> findByMaterialAndProduction(Material material, Production production);
 
+	/**
+	 * @param material
+	 * @param production
+	 * @param userId
+	 * @param id
+	 * @return
+	 */
+	Optional<ProductionMaterial> findByMaterialAndProductionAndVerifiedByAndVerifiedAt(Material material,
+			Production production, Long userId, Long id);
+
 }

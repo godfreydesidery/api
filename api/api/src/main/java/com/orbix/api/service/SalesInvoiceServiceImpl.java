@@ -273,7 +273,7 @@ public class SalesInvoiceServiceImpl implements SalesInvoiceService {
 	
 	@Override
 	public boolean archive(SalesInvoice salesInvoice) {
-		if(!salesInvoice.getStatus().equals("PAID")) {
+		if(!(salesInvoice.getStatus().equals("APPROVED") && salesInvoice.getBalance() == 0)) {
 			throw new InvalidOperationException("Could not process, only a fully PAID Invoice can be archived");
 		}
 		salesInvoice.setStatus("ARCHIVED");
@@ -366,10 +366,4 @@ public class SalesInvoiceServiceImpl implements SalesInvoiceService {
 		}		
 		return model;
 	}
-
-	
-
-	
-
-	
 }

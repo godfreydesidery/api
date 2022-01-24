@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.orbix.api.domain.Customer;
+import com.orbix.api.domain.Employee;
 import com.orbix.api.domain.Product;
 import com.orbix.api.domain.PackingList;
 import com.orbix.api.domain.PackingListDetail;
@@ -31,6 +32,7 @@ import com.orbix.api.exceptions.NotFoundException;
 import com.orbix.api.models.PackingListDetailModel;
 import com.orbix.api.models.PackingListModel;
 import com.orbix.api.repositories.CustomerRepository;
+import com.orbix.api.repositories.EmployeeRepository;
 import com.orbix.api.repositories.ProductRepository;
 import com.orbix.api.repositories.PackingListDetailRepository;
 import com.orbix.api.repositories.PackingListRepository;
@@ -56,6 +58,7 @@ public class PackingListResource {
 	private final 	PackingListRepository packingListRepository;
 	private final 	PackingListDetailRepository packingListDetailRepository;
 	private final 	CustomerRepository customerRepository;
+	private final 	EmployeeRepository employeeRepository;
 	private final 	ProductRepository productRepository;
 	
 	@GetMapping("/packing_lists")
@@ -94,9 +97,14 @@ public class PackingListResource {
 		if(!c.isPresent()) {
 			throw new NotFoundException("Customer not found");
 		}
+		Optional<Employee> e = employeeRepository.findByNo(packingList.getEmployee().getNo());
+		if(!e.isPresent()) {
+			throw new NotFoundException("Employee not found");
+		}
 		PackingList inv = new PackingList();
 		inv.setNo("NA");
 		inv.setCustomer(c.get());
+		inv.setEmployee(e.get());
 		inv.setStatus("PENDING");
 		inv.setIssueDate(packingList.getIssueDate());
 		inv.setComments(packingList.getComments());	
@@ -115,6 +123,10 @@ public class PackingListResource {
 		if(!c.isPresent()) {
 			throw new NotFoundException("Customer not found");
 		}
+		Optional<Employee> e = employeeRepository.findByNo(packingList.getEmployee().getNo());
+		if(!e.isPresent()) {
+			throw new NotFoundException("Employee not found");
+		}
 		Optional<PackingList> l = packingListRepository.findById(packingList.getId());
 		if(!l.isPresent()) {
 			throw new NotFoundException("PACKING_LIST not found");
@@ -132,6 +144,7 @@ public class PackingListResource {
 			throw new InvalidOperationException("Changing Customer is not allowed for non blank Sales Issues");
 		}		
 		l.get().setCustomer(c.get());
+		l.get().setEmployee(e.get());
 		l.get().setIssueDate(packingList.getIssueDate());
 		l.get().setComments(packingList.getComments());
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/packing_lists/update").toUriString());

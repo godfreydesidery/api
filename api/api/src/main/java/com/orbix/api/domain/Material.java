@@ -40,6 +40,8 @@ public class Material {
 	@NotBlank
 	@Column(unique = true)
 	private String description;
+	@Column(unique = true)
+	private String shortDescription;
 	private double vat = 0;
 	private double costPriceVatIncl = 0;
 	private double costPriceVatExcl = 0;

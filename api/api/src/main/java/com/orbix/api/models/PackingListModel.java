@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.orbix.api.domain.Customer;
+import com.orbix.api.domain.Employee;
 
 import lombok.Data;
 
@@ -25,6 +26,7 @@ public class PackingListModel {
 	String approved = "";
 	String posted = "";
 	Customer customer = null;
+	Employee employee = null;
 	
 	double totalPreviousReturns = 0;
 	double totalAmountIssued = 0;

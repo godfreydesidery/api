@@ -34,6 +34,9 @@ public class ProductionMaterial {
 	private Long id;
 	private double qty = 0;
 	
+	private Long verifiedBy;
+	private Long verifiedAt;
+	
 	@ManyToOne(targetEntity = Production.class, fetch = FetchType.EAGER,  optional = false)
     @JoinColumn(name = "production_id", nullable = false , updatable = false)
     @OnDelete(action = OnDeleteAction.NO_ACTION)	

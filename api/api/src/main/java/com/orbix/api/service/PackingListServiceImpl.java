@@ -90,6 +90,7 @@ public class PackingListServiceImpl implements PackingListService {
 		model.setId(pcl.getId());
 		model.setNo(pcl.getNo());
 		model.setCustomer(pcl.getCustomer());
+		model.setEmployee(pcl.getEmployee());
 		model.setStatus(pcl.getStatus());
 		model.setIssueDate(pcl.getIssueDate());		
 		model.setComments(pcl.getComments());
@@ -165,6 +166,7 @@ public class PackingListServiceImpl implements PackingListService {
 		model.setId(pcl.get().getId());
 		model.setNo(pcl.get().getNo());
 		model.setCustomer(pcl.get().getCustomer());
+		model.setEmployee(pcl.get().getEmployee());
 		model.setStatus(pcl.get().getStatus());
 		model.setIssueDate(pcl.get().getIssueDate());		
 		model.setComments(pcl.get().getComments());
@@ -245,6 +247,7 @@ public class PackingListServiceImpl implements PackingListService {
 		model.setId(pcl.get().getId());
 		model.setNo(pcl.get().getNo());
 		model.setCustomer(pcl.get().getCustomer());
+		model.setEmployee(pcl.get().getEmployee());
 		model.setStatus(pcl.get().getStatus());
 		model.setIssueDate(pcl.get().getIssueDate());		
 		model.setComments(pcl.get().getComments());
@@ -804,6 +807,6 @@ public class PackingListServiceImpl implements PackingListService {
 	private String generatePackingListNo(PackingList packingList) {
 		Long number = packingList.getId();		
 		String sNumber = number.toString();
-		return "PCL-"+Formater.formatSix(sNumber);
+		return "SLR-"+Formater.formatNine(sNumber);
 	}
 }

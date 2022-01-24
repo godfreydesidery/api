@@ -68,6 +68,11 @@ public class PackingList {
     @OnDelete(action = OnDeleteAction.NO_ACTION)	
     private Customer customer;
 	
+	@ManyToOne(targetEntity = Employee.class, fetch = FetchType.EAGER, optional = true)
+    @JoinColumn(name = "employee_id", nullable = false , updatable = true)
+    @OnDelete(action = OnDeleteAction.NO_ACTION)	
+    private Employee employee;
+	
 	@OneToMany(targetEntity = PackingListDetail.class, mappedBy = "packingList", fetch = FetchType.EAGER, orphanRemoval = true)
     @Valid
     @JsonIgnoreProperties("packingList")

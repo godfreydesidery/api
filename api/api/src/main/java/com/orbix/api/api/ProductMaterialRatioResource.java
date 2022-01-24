@@ -84,7 +84,7 @@ public class ProductMaterialRatioResource {
 		if(!prod.isPresent()) {
 			throw new InvalidOperationException("Product not found");
 		}
-		Optional<Material> mat = materialRepository.findById(productMaterialRatio.getProduct().getId());
+		Optional<Material> mat = materialRepository.findById(productMaterialRatio.getMaterial().getId());
 		if(!mat.isPresent()) {
 			throw new InvalidOperationException("Material not found");
 		}		
@@ -93,7 +93,7 @@ public class ProductMaterialRatioResource {
 			throw new NotFoundException("Ratio already exists, consider editing the respective ratio.");
 		}
 		Optional<ProductMaterialRatio> product = productMaterialRatioRepository.findByProduct(prod.get());
-		if(!product.isPresent()) {
+		if(product.isPresent()) {
 			throw new InvalidOperationException("The product already exist in the list. Please consider editing the ratio");
 		}
 		List<Material> material = productMaterialRatioRepository.findByMaterial(mat.get());
@@ -115,7 +115,7 @@ public class ProductMaterialRatioResource {
 		if(!prod.isPresent()) {
 			throw new InvalidOperationException("Product not found");
 		}
-		Optional<Material> mat = materialRepository.findById(productMaterialRatio.getProduct().getId());
+		Optional<Material> mat = materialRepository.findById(productMaterialRatio.getMaterial().getId());
 		if(!mat.isPresent()) {
 			throw new InvalidOperationException("Material not found");
 		}		

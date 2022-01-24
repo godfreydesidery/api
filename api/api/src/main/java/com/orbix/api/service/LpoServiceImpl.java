@@ -14,6 +14,8 @@ import com.orbix.api.accessories.Formater;
 import com.orbix.api.domain.Grn;
 import com.orbix.api.domain.Lpo;
 import com.orbix.api.domain.LpoDetail;
+import com.orbix.api.domain.Product;
+import com.orbix.api.domain.Supplier;
 import com.orbix.api.exceptions.InvalidEntryException;
 import com.orbix.api.exceptions.InvalidOperationException;
 import com.orbix.api.exceptions.NotFoundException;
@@ -22,6 +24,8 @@ import com.orbix.api.models.LpoModel;
 import com.orbix.api.repositories.DayRepository;
 import com.orbix.api.repositories.LpoDetailRepository;
 import com.orbix.api.repositories.LpoRepository;
+import com.orbix.api.repositories.ProductRepository;
+import com.orbix.api.repositories.SupplierRepository;
 import com.orbix.api.repositories.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -41,6 +45,8 @@ public class LpoServiceImpl implements LpoService {
 	private final LpoDetailRepository lpoDetailRepository;
 	private final UserRepository userRepository;
 	private final DayRepository dayRepository;
+	private final SupplierRepository supplierRepository;
+	private final ProductRepository productRepository;
 	
 	@Override
 	public LpoModel save(Lpo lpo) {
@@ -196,7 +202,7 @@ public class LpoServiceImpl implements LpoService {
 	public LpoDetailModel saveDetail(LpoDetail lpoDetail) {
 		if(!validateDetail(lpoDetail)) {
 			throw new InvalidEntryException("Could not save detail, Invalid entry");
-		}
+		}		
 		LpoDetailModel model = new LpoDetailModel();
 		LpoDetail l = lpoDetailRepository.save(lpoDetail);
 		model.setId(l.getId());
@@ -256,6 +262,17 @@ public class LpoServiceImpl implements LpoService {
 	}
 	
 	private boolean validateDetail(LpoDetail lpoDetail) {
+		Optional<Lpo> l = lpoRepository.findById(lpoDetail.getLpo().getId());
+		Optional<Product> p = productRepository.findById(lpoDetail.getProduct().getId());
+		if(!l.isPresent()) {
+			throw new NotFoundException("LPO not found");
+		}
+		if(!p.isPresent()) {
+			throw new NotFoundException("Product not found");
+		}
+		if(!l.get().getSupplier().equals(p.get().getSupplier())) {
+			throw new InvalidOperationException("Could not save detail, Product not available for the selected supplier.");
+		}
 		return true;
 	}
 	

@@ -3,6 +3,8 @@
  */
 package com.orbix.api.service;
 
+import javax.servlet.http.HttpServletRequest;
+
 import com.orbix.api.domain.Material;
 import com.orbix.api.domain.Product;
 import com.orbix.api.domain.Production;
@@ -25,10 +27,10 @@ public interface ProductionService {
 	public ProductionModel cancel(Production production);
 	public ProductionUnverifiedMaterialModel addMaterial(Production production, Material material, double qty);
 	public ProductionUnverifiedMaterialModel deductMaterial(Production production, Material material, double qty);
-	public ProductionMaterialModel verifyMaterial(Production production, Material material, double qty);
+	public ProductionMaterialModel verifyMaterial(Production production, Material material, double qty, HttpServletRequest request);
 	public boolean removeMaterial(Production production, Material material);
 	public ProductionUnverifiedProductModel addProduct(Production production, Product product, double qty);
 	public ProductionUnverifiedProductModel deductProduct(Production production, Product product, double qty);
-	public ProductionProductModel verifyProduct(Production production, Product product, double qty);
+	public ProductionProductModel verifyProduct(Production production, Product product, double qty, HttpServletRequest request);
 	public boolean removeProduct(Production production, Product product);
 }

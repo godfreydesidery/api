@@ -43,6 +43,7 @@ import com.orbix.api.repositories.ProductionProductRepository;
 import com.orbix.api.repositories.ProductionRepository;
 import com.orbix.api.repositories.ProductionUnverifiedMaterialRepository;
 import com.orbix.api.repositories.ProductionUnverifiedProductRepository;
+import com.orbix.api.service.DayService;
 import com.orbix.api.service.ProductService;
 import com.orbix.api.service.ProductionService;
 import com.orbix.api.service.UserService;
@@ -71,6 +72,7 @@ public class ProductionResource {
 	private final ProductRepository productRepository;
 	private final MaterialStockCardRepository materialStockCardRepository;
 	private final ProductStockCardRepository productStockCardRepository;
+	private final DayService dayService;
 
 	@GetMapping("/productions")
 	//@PreAuthorize("hasAnyAuthority('PRODUCTION-READ')")
@@ -116,6 +118,7 @@ public class ProductionResource {
 		prod.get().setBatchNo(production.getBatchNo());
 		prod.get().setBatchSize(production.getBatchSize());
 		prod.get().setUom(production.getUom());
+		prod.get().setComments(production.getComments());
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/productions/update").toUriString());
 		return ResponseEntity.created(uri).body(productionService.save(prod.get()));
 	}
@@ -264,7 +267,8 @@ public class ProductionResource {
 	@PostMapping("/productions/verify_material")
 	//@PreAuthorize("hasAnyAuthority('PRODUCTION-CREATE')")
 	public ResponseEntity<Material> verifyMaterial(
-			@RequestBody MaterialProduction materialProduction){
+			@RequestBody MaterialProduction materialProduction,
+			HttpServletRequest request){
 		Optional<Material> mat = materialRepository.findById(materialProduction.getMaterial().getId());
 		if(!mat.isPresent()) {
 			throw new NotFoundException("Material not found");
@@ -289,7 +293,7 @@ public class ProductionResource {
 			}
 			
 			
-			Optional<ProductionMaterial> pm = productionMaterialRepository.findByMaterialAndProduction(mat.get(), prod.get());
+			Optional<ProductionMaterial> pm = productionMaterialRepository.findByMaterialAndProductionAndVerifiedByAndVerifiedAt(mat.get(), prod.get(), userService.getUserId(request), dayRepository.getCurrentBussinessDay().getId());
 			if(pm.isPresent()) {
 				/**
 				 * Add qty
@@ -304,6 +308,8 @@ public class ProductionResource {
 				productionMaterial.setProduction(prod.get());
 				productionMaterial.setMaterial(mat.get());
 				productionMaterial.setQty(materialProduction.getQty());
+				productionMaterial.setVerifiedAt(dayService.getDayId());
+				productionMaterial.setVerifiedBy(userService.getUserId(request));
 				productionMaterialRepository.saveAndFlush(productionMaterial);
 			}
 			/**
@@ -330,7 +336,7 @@ public class ProductionResource {
 		}else {
 			throw new InvalidOperationException("Material not registered in production");
 		}
-		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/productions/remove_material").toUriString());
+		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/productions/verify_material").toUriString());
 		return ResponseEntity.created(uri).body(mat.get());
 	}
 	
@@ -365,7 +371,8 @@ public class ProductionResource {
 	@PostMapping("/productions/verify_product")
 	//@PreAuthorize("hasAnyAuthority('PRODUCTION-CREATE')")
 	public ResponseEntity<Product> verifyProduct(
-			@RequestBody ProductProduction productProduction){
+			@RequestBody ProductProduction productProduction,
+			HttpServletRequest request){
 		Optional<Product> p = productRepository.findById(productProduction.getProduct().getId());
 		if(!p.isPresent()) {
 			throw new NotFoundException("Product not found");
@@ -389,7 +396,7 @@ public class ProductionResource {
 				throw new InvalidEntryException("Could not verify, quantity do not match");
 			}
 			
-			Optional<ProductionProduct> pp = productionProductRepository.findByProductAndProduction(p.get(), prod.get());
+			Optional<ProductionProduct> pp = productionProductRepository.findByProductAndProductionAndVerifiedByAndVerifiedAt(p.get(), prod.get(), userService.getUserId(request), dayRepository.getCurrentBussinessDay().getId());
 			if(pp.isPresent()) {
 				/**
 				 * Add qty
@@ -404,6 +411,8 @@ public class ProductionResource {
 				productionProduct.setProduction(prod.get());
 				productionProduct.setProduct(p.get());
 				productionProduct.setQty(productProduction.getQty());
+				productionProduct.setVerifiedAt(dayService.getDayId());
+				productionProduct.setVerifiedBy(userService.getUserId(request));
 				productionProductRepository.saveAndFlush(productionProduct);
 			}
 			/**

@@ -46,7 +46,7 @@ public class ProductMaterialRatioServiceImpl implements ProductMaterialRatioServ
 		if(!prod.isPresent()) {
 			throw new InvalidOperationException("Product not found");
 		}
-		Optional<Material> mat = materialRepository.findById(productMaterialRatio.getProduct().getId());
+		Optional<Material> mat = materialRepository.findById(productMaterialRatio.getMaterial().getId());
 		if(!mat.isPresent()) {
 			throw new InvalidOperationException("Material not found");
 		}

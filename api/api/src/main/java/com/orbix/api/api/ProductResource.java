@@ -6,6 +6,7 @@ package com.orbix.api.api;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -22,6 +23,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.orbix.api.domain.Product;
+import com.orbix.api.exceptions.NotFoundException;
+import com.orbix.api.repositories.ProductRepository;
 import com.orbix.api.service.ProductService;
 import lombok.RequiredArgsConstructor;
 
@@ -35,6 +38,7 @@ import lombok.RequiredArgsConstructor;
 public class ProductResource {
 	
 private final 	ProductService productService;
+private final ProductRepository productRepository;
 	
 	@GetMapping("/products")
 	@PreAuthorize("hasAnyAuthority('PRODUCT-READ')")
@@ -97,6 +101,21 @@ private final 	ProductService productService;
 	public ResponseEntity<Product>updateProduct(
 			@RequestBody Product product, 
 			HttpServletRequest request){
+		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/products/update").toUriString());
+		return ResponseEntity.created(uri).body(productService.save(product));
+	}
+	
+	@PutMapping("/products/update_by_code")
+	@PreAuthorize("hasAnyAuthority('PRODUCT-UPDATE')")
+	public ResponseEntity<Product>updateProductByCode(
+			@RequestBody Product product, 
+			HttpServletRequest request){
+		Optional<Product> prod = productRepository.findByCode(product.getCode());
+		if(prod.isPresent()) {
+			product.setId(prod.get().getId());
+		}else {
+			throw new NotFoundException("Product not found");
+		}
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/products/update").toUriString());
 		return ResponseEntity.created(uri).body(productService.save(product));
 	}

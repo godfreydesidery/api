@@ -81,14 +81,15 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 		validateUser(user);
 		log.info("Saving user to the database");
 		if(user.getId() == null) {
-			user.setPassword(passwordEncoder.encode(user.getPassword()));
+			user.setPassword(passwordEncoder.encode(user.getPassword()));			
 		}else {
 			User userToUpdate = userRepository.findById(user.getId()).get();
 			if(user.getPassword().equals("") || user.getPassword().equals(null)) {
 				user.setPassword(userToUpdate.getPassword());
-			}			
+			}else {
+				user.setPassword(passwordEncoder.encode(user.getPassword()));
+			}
 		}
-		
 		return userRepository.save(user);
 	}
 	
@@ -100,7 +101,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 			throw new InvalidEntryException("Length of username should be more than 5 and less than 17");
 		}
 		/**
-		 * Validate password, password should have a vaild length
+		 * Validate password, password should have a valid length
 		 */
 		if(user.getId() == null) {
 			if(user.getPassword().equals("")) {

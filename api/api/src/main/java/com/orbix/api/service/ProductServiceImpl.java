@@ -233,7 +233,7 @@ public class ProductServiceImpl implements ProductService {
 	}
 	
 	private boolean allowDelete(Product product) {
-		return true;
+		return false;
 	}
 
 	@Override

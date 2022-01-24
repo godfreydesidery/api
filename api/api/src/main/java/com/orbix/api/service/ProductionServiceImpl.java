@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
@@ -424,7 +425,7 @@ public class ProductionServiceImpl implements ProductionService {
 	}
 
 	@Override
-	public ProductionMaterialModel verifyMaterial(Production production, Material material, double qty) {
+	public ProductionMaterialModel verifyMaterial(Production production, Material material, double qty, HttpServletRequest request) {
 		/**
 		 * Checks if production is valid for verifying material
 		 */
@@ -563,7 +564,7 @@ public class ProductionServiceImpl implements ProductionService {
 	}
 
 	@Override
-	public ProductionProductModel verifyProduct(Production production, Product product, double qty) {
+	public ProductionProductModel verifyProduct(Production production, Product product, double qty, HttpServletRequest request) {
 		/**
 		 * Checks if production is valid for verifying product
 		 */

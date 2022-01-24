@@ -178,7 +178,7 @@ public class LpoResource {
 			l.get().setPrintedAt(dayService.getDayId());
 			l.get().setStatus("PRINTED");
 		}else {
-			throw new InvalidOperationException("Could not print, LPO not approved");
+			throw new InvalidOperationException("Could not print, only APPROVED LPOs can be printed");
 		}
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/lpos/print").toUriString());
 		return ResponseEntity.created(uri).body(lpoService.save(l.get()));

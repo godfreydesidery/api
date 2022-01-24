@@ -31,4 +31,14 @@ public interface ProductionProductRepository extends JpaRepository<ProductionPro
 	 */
 	Optional<ProductionProduct> findByProductAndProduction(Product product, Production production);
 
+	/**
+	 * @param product
+	 * @param production
+	 * @param userId
+	 * @param id
+	 * @return
+	 */
+	Optional<ProductionProduct> findByProductAndProductionAndVerifiedByAndVerifiedAt(Product product,
+			Production production, Long userId, Long id);
+
 }
