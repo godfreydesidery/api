@@ -61,6 +61,7 @@ public class PackingList {
 	private double totalExpenditures = 0;
 	private double totalBank = 0;
 	private double totalCash = 0;
+	private double totalOther = 0;
 	private double totalDeficit = 0;
 	
 	@ManyToOne(targetEntity = Customer.class, fetch = FetchType.EAGER, optional = true)

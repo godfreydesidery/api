@@ -37,7 +37,7 @@ public class CustomerResource {
 	private final 	CustomerService customerService;
 	
 	@GetMapping("/customers")
-	@PreAuthorize("hasAnyAuthority('CUSTOMER-READ')")
+	@PreAuthorize("hasAnyAuthority('ADMIN-READ')")
 	public ResponseEntity<List<Customer>>getCustomers(){
 		return ResponseEntity.ok().body(customerService.getAll());
 	}

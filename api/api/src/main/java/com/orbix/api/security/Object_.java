@@ -16,6 +16,7 @@ public class Object_ {
 	 * Format: OBJECT-LIST OF NOT ALLOWED AUTHORITIES
 	 */
 	
+	public static String ADMIN = "ADMIN";
 	public static String USER = "USER-APPROVE PRINT CANCEL";
 	public static String ROLE = "ROLE-ACTIVATE APPROVE PRINT CANCEL";
 	public static String TILL = "TILL-APPROVE PRINT CANCEL";
@@ -31,6 +32,7 @@ public class Object_ {
 	public static String PACKING_LIST = "PACKING_LIST-ACTIVATE";
 	public static String SALES_RECEIPT = "SALES_RECEIPT-ACTIVATE";
 	public static String ALLOCATION = "ALLOCATION-UPDATE DELETE ACTIVATE APPROVE PRINT CANCEL";
+	public static String DEBT_RECEIPT = "DEBT_RECEIPT-ACTIVATE";
 	public static String MATERIAL = "MATERIAL-APPROVE PRINT CANCEL";
 	
 }

@@ -37,6 +37,8 @@ public class Debt {
     private Long id;
 	@NotNull
 	private double amount = 0;
+	@NotNull
+	private double balance = 0;
 	
 	@ManyToOne(targetEntity = Day.class, fetch = FetchType.EAGER, optional = true)
     @JoinColumn(name = "day_id", nullable = true , updatable = false)
