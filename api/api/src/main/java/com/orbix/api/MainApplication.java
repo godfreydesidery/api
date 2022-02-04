@@ -107,7 +107,7 @@ protected ConfigurableApplicationContext springContext;
 		return args -> {
 			if(!companyProfileService.hasData()) {
 				log.info("Creating mock company");
-				CompanyProfile company = new CompanyProfile(null, "Company Name","Contact Name", null, "NAN", "NAN", "NAN", "NAN", "NAN", "NAN", "NAN", "NAN", "NAN", "NAN", "NAN", "NAN", "NAN", "NAN", "NAN");
+				CompanyProfile company = new CompanyProfile(null, "Company Name","Contact Name", null, "NAN", "NAN", "NAN", "NAN", "NAN", "NAN", "NAN", "NAN", "NAN", "NAN", "NAN", "NAN", "NAN", "NAN", "NAN", "NAN");
 				companyProfileService.saveCompanyProfile(company);
 			}
 			

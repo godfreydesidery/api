@@ -59,6 +59,7 @@ public class CompanyProfileServiceImpl implements CompanyProfileService {
 				profile.setTelephone(companyProfile.getTelephone());
 				profile.setMobile(companyProfile.getMobile());
 				profile.setEmail(companyProfile.getEmail());
+				profile.setWebsite(companyProfile.getWebsite());
 				profile.setFax(companyProfile.getFax());
 				profile.setBankAccountName(companyProfile.getBankAccountName());
 				profile.setBankPhysicalAddress(companyProfile.getBankPhysicalAddress());

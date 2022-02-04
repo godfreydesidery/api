@@ -700,9 +700,12 @@ public class PackingListServiceImpl implements PackingListService {
 		 */
 		if(totalDeficit > 0) {
 			Debt debt = new Debt();
+			debt.setNo("NA");
+			debt.setStatus("PENDING");
 			debt.setAmount(totalDeficit);
 			debt.setBalance(totalDeficit);
 			debt.setDay(dayRepository.getCurrentBussinessDay());
+			debt.setEmployee(pcl.getEmployee());
 			debt.setPackingList(pcl);
 			debtService.create(debt);
 		}

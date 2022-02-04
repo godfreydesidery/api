@@ -43,6 +43,7 @@ public class CompanyProfile {
 	private String telephone;
 	private String mobile;
 	private String email;
+	private String website;
 	private String fax;
 	private String bankAccountName;
 	private String bankPhysicalAddress;

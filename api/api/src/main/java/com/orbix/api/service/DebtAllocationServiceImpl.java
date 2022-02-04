@@ -84,6 +84,7 @@ public class DebtAllocationServiceImpl implements DebtAllocationService {
 				debtAllocationAmount = debt.getBalance();
 				employee.setBalance(newEmployeeBalance);
 				debt.setBalance(balance);
+				debt.setStatus("PAID");
 				employeeRepository.saveAndFlush(employee);
 				debtRepository.saveAndFlush(debt);				
 			}else if(employeeBalance < debt.getBalance()) {
@@ -95,6 +96,7 @@ public class DebtAllocationServiceImpl implements DebtAllocationService {
 				debtAllocationAmount = employeeBalance;
 				employee.setBalance(newEmployeeBalance);
 				debt.setBalance(balance);
+				debt.setStatus("PARTIAL");
 				employeeRepository.saveAndFlush(employee);
 				debtRepository.saveAndFlush(debt);
 			}			

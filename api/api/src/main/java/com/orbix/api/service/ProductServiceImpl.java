@@ -18,6 +18,8 @@ import com.orbix.api.domain.LevelTwo;
 import com.orbix.api.domain.Category;
 import com.orbix.api.domain.Class;
 import com.orbix.api.domain.Product;
+import com.orbix.api.domain.ProductPriceChange;
+import com.orbix.api.domain.ProductStockCard;
 import com.orbix.api.domain.SubCategory;
 import com.orbix.api.domain.SubClass;
 import com.orbix.api.domain.Supplier;
@@ -27,6 +29,7 @@ import com.orbix.api.exceptions.MissingInformationException;
 import com.orbix.api.exceptions.NotFoundException;
 import com.orbix.api.repositories.CategoryRepository;
 import com.orbix.api.repositories.ClassRepository;
+import com.orbix.api.repositories.DayRepository;
 import com.orbix.api.repositories.DepartmentRepository;
 import com.orbix.api.repositories.LevelFourRepository;
 import com.orbix.api.repositories.LevelOneRepository;
@@ -61,6 +64,9 @@ public class ProductServiceImpl implements ProductService {
 	private final LevelTwoRepository levelTwoRepository;
 	private final LevelThreeRepository levelThreeRepository;
 	private final LevelFourRepository levelFourRepository;
+	private final DayRepository dayRepository;
+	private final ProductStockCardService productStockCardService;
+	private final ProductPriceChangeService productPriceChangeService;
 
 	@Override
 	public Product save(Product product) {
@@ -145,13 +151,67 @@ public class ProductServiceImpl implements ProductService {
 		}
 		
 		//Check if product exists, if no, stock card, put opening balance, else stock card put new updated balance
-		
+		boolean existing = true;
+		double originalCostPriceVatIncl = 0;
+		double originalCostPriceVatExcl = 0;
+		double originalSellingPriceVatIncl = 0;
+		double originalSellingPriceVatExcl = 0;
+		double finalCostPriceVatIncl = 0;
+		double finalCostPriceVatExcl = 0;
+		double finalSellingPriceVatIncl = 0;
+		double finalSellingPriceVatExcl = 0;
+		if(product.getId() == null) {
+			existing = false;
+		}else {
+			Product pr = productRepository.findById(product.getId()).get();
+			originalCostPriceVatIncl = pr.getCostPriceVatIncl();
+			originalCostPriceVatExcl = pr.getCostPriceVatExcl();
+			originalSellingPriceVatIncl = pr.getSellingPriceVatIncl();
+			originalSellingPriceVatExcl = pr.getSellingPriceVatExcl();
+			finalCostPriceVatIncl = product.getCostPriceVatIncl();
+			finalCostPriceVatExcl = product.getCostPriceVatExcl();
+			finalSellingPriceVatIncl = product.getSellingPriceVatIncl();
+			finalSellingPriceVatExcl = product.getSellingPriceVatExcl();
+		}
 		
 		if(validate(product)) {
 			//Continue, else throw validation error
+		}		
+		productRepository.save(product);
+		
+		ProductStockCard stockCard = new ProductStockCard();
+		stockCard.setQtyIn(product.getStock());
+		stockCard.setProduct(product);
+		stockCard.setBalance(product.getStock());
+		stockCard.setDay(dayRepository.getCurrentBussinessDay());
+		if(existing == false) {
+			stockCard.setReference("Opening balance");
+		}else {
+			stockCard.setReference("Stock update");
 		}
 		
-		return productRepository.save(product);
+		if(existing == true) {
+			if(originalCostPriceVatIncl != finalCostPriceVatIncl || originalCostPriceVatExcl != finalCostPriceVatExcl || originalSellingPriceVatIncl != finalSellingPriceVatIncl || originalSellingPriceVatExcl != finalSellingPriceVatExcl) {
+				ProductPriceChange productPriceChange = new ProductPriceChange();
+				productPriceChange.setOriginalCostPriceVatIncl(originalCostPriceVatIncl);
+				productPriceChange.setOriginalCostPriceVatExcl(originalCostPriceVatExcl);
+				productPriceChange.setOriginalSellingPriceVatIncl(originalSellingPriceVatIncl);
+				productPriceChange.setOriginalSellingPriceVatExcl(originalSellingPriceVatExcl);
+				
+				productPriceChange.setFinalCostPriceVatIncl(finalCostPriceVatIncl);
+				productPriceChange.setFinalCostPriceVatExcl(finalCostPriceVatExcl);
+				productPriceChange.setFinalSellingPriceVatIncl(finalSellingPriceVatIncl);
+				productPriceChange.setFinalSellingPriceVatExcl(finalSellingPriceVatExcl);
+				
+				productPriceChange.setProduct(product);
+				productPriceChange.setDay(dayRepository.getCurrentBussinessDay());
+				productPriceChange.setReference("Price changed in product update");
+				
+				productPriceChangeService.save(productPriceChange);
+			}
+		}		
+		productStockCardService.save(stockCard);		
+		return product;
 		
 	}
 
