@@ -32,7 +32,7 @@ public class Till {
 	private Long id;
 	@NotBlank
 	@Column(unique = true)
-	private String tillNo;
+	private String no;
 	@Column(unique = true)
 	private String computerName;
 	private boolean active = true;

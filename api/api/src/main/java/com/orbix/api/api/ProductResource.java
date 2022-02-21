@@ -75,7 +75,7 @@ private final ProductRepository productRepository;
 	}
 	
 	@GetMapping("/products/get_by_description")
-	@PreAuthorize("hasAnyAuthority('PRODUCT-READ')")
+	//@PreAuthorize("hasAnyAuthority('PRODUCT-READ')")
 	public ResponseEntity<Product> getProductByDescription(
 			@RequestParam(name = "description") String description){
 		return ResponseEntity.ok().body(productService.getByDescription(description));

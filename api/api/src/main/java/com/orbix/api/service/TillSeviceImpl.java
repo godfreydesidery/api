@@ -42,8 +42,17 @@ public class TillSeviceImpl implements TillService {
 	}
 
 	@Override
-	public Till getTillByTillNo(String tillNo) {
-		Optional<Till> till = tillRepository.findByTillNo(tillNo);
+	public Till getTillByNo(String no) {
+		Optional<Till> till = tillRepository.findByNo(no);
+		if(!till.isPresent()) {
+			throw new NotFoundException("Till not found");
+		}
+		return till.get();
+	}
+	
+	@Override
+	public Till getTillByComputerName(String computerName) {
+		Optional<Till> till = tillRepository.findByComputerName(computerName);
 		if(!till.isPresent()) {
 			throw new NotFoundException("Till not found");
 		}

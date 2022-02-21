@@ -65,8 +65,7 @@ public class Product {
 	private boolean active = true;
 	private boolean sellable = true;
 	private String ingredients = "";
-	
-	
+		
 	@ManyToOne(targetEntity = Supplier.class, fetch = FetchType.EAGER,  optional = true)
     @JoinColumn(name = "supplier_id", nullable = true , updatable = true)
     @OnDelete(action = OnDeleteAction.NO_ACTION)	

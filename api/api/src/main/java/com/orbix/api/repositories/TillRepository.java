@@ -15,8 +15,14 @@ import java.util.Optional;
 public interface TillRepository extends JpaRepository<Till, Long> {
 
 	/**
-	 * @param tillNo
+	 * @param no
 	 * @return
 	 */
-	Optional<Till> findByTillNo(String tillNo);
+	Optional<Till> findByNo(String tillNo);
+
+	/**
+	 * @param computerName
+	 * @return
+	 */
+	Optional<Till> findByComputerName(String computerName);
 }

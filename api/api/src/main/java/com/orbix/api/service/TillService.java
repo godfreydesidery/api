@@ -14,7 +14,8 @@ import com.orbix.api.domain.Till;
 public interface TillService {
 	Till saveTill(Till till);
 	Till getTill(Long id);
-	Till getTillByTillNo(String tillNo);
+	Till getTillByNo(String no);
+	Till getTillByComputerName(String computerName);
 	boolean deleteTill(Till till);
 	List<Till>getTills(); //edit this to limit the number, for perfomance.
 }

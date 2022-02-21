@@ -53,8 +53,14 @@ public class TillResource {
 	@GetMapping("/tills/get_by_till_no")
 	@PreAuthorize("hasAnyAuthority('TILL-READ')")
 	public ResponseEntity<Till> getTillByTillNo(
-			@RequestParam(name = "till_no") String tillNo){
-		return ResponseEntity.ok().body(tillService.getTillByTillNo(tillNo));
+			@RequestParam(name = "till_no") String no){
+		return ResponseEntity.ok().body(tillService.getTillByNo(no));
+	}
+	
+	@GetMapping("/tills/get_by_computer_name")
+	public ResponseEntity<Till> getTillByComputerName(
+			@RequestParam(name = "computer_name") String computerName){
+		return ResponseEntity.ok().body(tillService.getTillByComputerName(computerName));
 	}
 	
 	@PostMapping("/tills/create")
