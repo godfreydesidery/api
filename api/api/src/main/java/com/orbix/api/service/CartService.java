@@ -3,8 +3,12 @@
  */
 package com.orbix.api.service;
 
+import javax.servlet.http.HttpServletRequest;
+
 import com.orbix.api.domain.Cart;
 import com.orbix.api.domain.CartDetail;
+import com.orbix.api.domain.Payment;
+import com.orbix.api.domain.Receipt;
 import com.orbix.api.domain.Till;
 
 /**
@@ -18,4 +22,5 @@ public interface CartService {
 	Cart activateCart(Cart cart, Till till);
 	boolean addCartDetail(CartDetail cartDetail);
 	boolean updateQty(CartDetail cartDetail);
+	Receipt pay(Payment payment, Cart cart, HttpServletRequest request);
 }

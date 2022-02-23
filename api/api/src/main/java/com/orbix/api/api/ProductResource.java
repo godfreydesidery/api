@@ -61,14 +61,14 @@ private final ProductRepository productRepository;
 	}
 	
 	@GetMapping("/products/get_by_barcode")
-	@PreAuthorize("hasAnyAuthority('PRODUCT-READ')")
+	//@PreAuthorize("hasAnyAuthority('PRODUCT-READ')")
 	public ResponseEntity<Product> getProductByBarcode(
 			@RequestParam(name = "barcode") String barcode){
 		return ResponseEntity.ok().body(productService.getByBarcode(barcode));
 	}
 	
 	@GetMapping("/products/get_by_code")
-	@PreAuthorize("hasAnyAuthority('PRODUCT-READ')")
+	//@PreAuthorize("hasAnyAuthority('PRODUCT-READ')")
 	public ResponseEntity<Product> getProductByCode(
 			@RequestParam(name = "code") String code){
 		return ResponseEntity.ok().body(productService.getByCode(code));
