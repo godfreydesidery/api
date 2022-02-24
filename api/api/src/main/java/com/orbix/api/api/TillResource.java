@@ -5,6 +5,7 @@ package com.orbix.api.api;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -20,9 +21,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.orbix.api.domain.CashPickUp;
+import com.orbix.api.domain.Floatt;
+import com.orbix.api.domain.PettyCash;
 import com.orbix.api.domain.Till;
 import com.orbix.api.domain.User;
+import com.orbix.api.exceptions.InvalidEntryException;
 import com.orbix.api.exceptions.InvalidOperationException;
+import com.orbix.api.exceptions.NotFoundException;
+import com.orbix.api.repositories.TillRepository;
+import com.orbix.api.service.CashPickUpService;
+import com.orbix.api.service.FloatService;
+import com.orbix.api.service.PettyCashService;
 import com.orbix.api.service.TillService;
 import lombok.RequiredArgsConstructor;
 
@@ -35,7 +45,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TillResource {
 	
-	private final 	TillService tillService;
+	private final TillRepository tillRepository;
+	private final TillService tillService;
+	private final CashPickUpService cashPickUpService;
+	private final PettyCashService pettyCashService;
+	private final FloatService floatService;
 	
 	@GetMapping("/tills")
 	@PreAuthorize("hasAnyAuthority('TILL-READ')")
@@ -51,7 +65,7 @@ public class TillResource {
 	}
 	
 	@GetMapping("/tills/get_by_till_no")
-	@PreAuthorize("hasAnyAuthority('TILL-READ')")
+	//@PreAuthorize("hasAnyAuthority('TILL-READ')")
 	public ResponseEntity<Till> getTillByTillNo(
 			@RequestParam(name = "till_no") String no){
 		return ResponseEntity.ok().body(tillService.getTillByNo(no));
@@ -109,5 +123,61 @@ public class TillResource {
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/tills/deactivate").toUriString());
 		return ResponseEntity.created(uri).body(tillService.saveTill(till));
 	}
-
+	
+	@PostMapping("/tills/cash_pick_up")
+	//@PreAuthorize("hasAnyAuthority('TILL-CREATE')")
+	public ResponseEntity<Void>cashPickUp(
+			@RequestBody CashPickUp cashPickUp,
+			HttpServletRequest request){
+		double amount = cashPickUp.getAmount();
+		Optional<Till> t = tillRepository.findByNo(cashPickUp.getTill().getNo());
+		if(!t.isPresent()) {
+			throw new NotFoundException("Till not found");
+		}		
+		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/tills/cash_pick_up").toUriString());
+		cashPickUpService.pickUp(amount, t.get(), request);
+		return null;		
+	}
+	
+	@PostMapping("/tills/float")
+	//@PreAuthorize("hasAnyAuthority('TILL-CREATE')")
+	public ResponseEntity<Void>float_(
+			@RequestBody Floatt float_,
+			HttpServletRequest request){
+		double add = float_.getAddition();
+		double deduct = float_.getDeduction();
+		Optional<Till> t = tillRepository.findByNo(float_.getTill().getNo());
+		if(!t.isPresent()) {
+			throw new NotFoundException("Till not found");
+		}		
+		if(add > 0 && deduct > 0) {
+			throw new InvalidEntryException("Simultaneous addition and deduction is not allowed");
+		}else if(add < 0 || deduct < 0) {
+			throw new InvalidOperationException("Negative values are not allowed");
+		}else if(add == 0 && deduct == 0) {
+			throw new InvalidOperationException("One of the values must be more than zero");
+		}
+		if(add > 0) {
+			floatService.addFloat(add, t.get(), request);
+		}else if(deduct > 0) {
+			floatService.deductFloat(deduct, t.get(), request);
+		}
+		return null;		
+	}
+	
+	@PostMapping("/tills/petty_cash")
+	//@PreAuthorize("hasAnyAuthority('TILL-CREATE')")
+	public ResponseEntity<Void>pettyCash(
+			@RequestBody PettyCash pettyCash,
+			HttpServletRequest request){
+		double amount = pettyCash.getAmount();
+		String details = pettyCash.getDetails();
+		Optional<Till> t = tillRepository.findByNo(pettyCash.getTill().getNo());
+		if(!t.isPresent()) {
+			throw new NotFoundException("Till not found");
+		}		
+		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/tills/cash_pick_up").toUriString());
+		pettyCashService.pettyCash(amount, details, t.get(), request);
+		return null;		
+	}
 }

@@ -3,6 +3,7 @@
  */
 package com.orbix.api.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,6 +19,7 @@ import com.orbix.api.domain.Lpo;
 import com.orbix.api.domain.PackingList;
 import com.orbix.api.domain.Payment;
 import com.orbix.api.domain.Product;
+import com.orbix.api.domain.ProductStockCard;
 import com.orbix.api.domain.Receipt;
 import com.orbix.api.domain.ReceiptDetail;
 import com.orbix.api.domain.Sale;
@@ -74,6 +76,8 @@ public class CartServiceImpl implements CartService {
 	private final ProductDamageService productDamageService;
 	private final ProductOfferService productOfferService;
 	private final DebtService debtService;
+		
+	private final VoidedService voidedService;
 	
 	@Override
 	public Cart createCart(Till till) {
@@ -166,19 +170,77 @@ public class CartServiceImpl implements CartService {
 		return true;
 	}
 	@Override
+	public boolean updateDiscount(CartDetail cartDetail) {
+		Optional<CartDetail> d = cartDetailRepository.findById(cartDetail.getId());
+		if(!d.isPresent()) {
+			throw new NotFoundException("Detail not found");
+		}
+		if(cartDetail.getDiscount() < 0) {
+			throw new InvalidEntryException("Invalid entry");
+		}
+		d.get().setDiscount(cartDetail.getDiscount());
+		cartDetailRepository.saveAndFlush(d.get());
+		return true;
+	}
+	@Override
+	public boolean voidd(CartDetail cartDetail, HttpServletRequest request) {
+		Optional<CartDetail> d = cartDetailRepository.findById(cartDetail.getId());
+		if(!d.isPresent()) {
+			throw new NotFoundException("Detail not found");
+		}		
+		d.get().setVoided(true);
+		cartDetailRepository.saveAndFlush(d.get());
+		voidedService.createVoid(d.get().getCart().getTill(), d.get().getBarcode(), d.get().getCode(), d.get().getDescription(), d.get().getQty(), d.get().getSellingPriceVatIncl(), request, dayRepository.getCurrentBussinessDay().getId(), d.get().getId());
+		return true;
+	}
+	
+	@Override
+	public boolean unvoid(CartDetail cartDetail) {
+		Optional<CartDetail> d = cartDetailRepository.findById(cartDetail.getId());
+		if(!d.isPresent()) {
+			throw new NotFoundException("Detail not found");
+		}
+		Long dId = d.get().getId();
+		Optional<CartDetail> dv = cartDetailRepository.findByCodeAndCartAndVoided(cartDetail.getCode(), d.get().getCart(), false);
+		if(dv.isPresent()) {
+			dv.get().setQty(dv.get().getQty() + d.get().getQty());
+			cartDetailRepository.saveAndFlush(dv.get());
+			cartDetailRepository.delete(d.get());
+		}else {
+			d.get().setVoided(false);
+			cartDetailRepository.saveAndFlush(d.get());
+		}		
+		voidedService.deleteVoid(dId);
+		return true;
+	}
+	
+	@Override
 	public Receipt pay(Payment payment, Cart cart, HttpServletRequest request) {
 		//First validate values, will be skipped for the time being
 		
 		//define a sale, define a receipt
 		
 		//To add: deduct from stocks, and update stock cards
+		//Register till position
+		Till till = cart.getTill();
+		till.setCash(till.getCash() + payment.getCash());
+		till.setCap(till.getCash() + payment.getCap());
+		till.setCheque(till.getCheque() + payment.getCheque());
+		till.setCrCard(till.getCrCard() + payment.getCrCard());
+		till.setCrNote(till.getCrNote() + payment.getCrNote());
+		till.setDeposit(till.getDeposit() + payment.getDeposit());
+		till.setLoyalty(till.getLoyalty() + payment.getLoyalty());
+		till.setMobile(till.getMobile() + payment.getMobile());
+		till.setOther(till.getOther() + payment.getOther());
+		tillRepository.saveAndFlush(till);
 		
 		List<CartDetail> cartDetails = cart.getCartDetails();		
 		Receipt receipt = new Receipt();
+		Receipt returnReceipt = new Receipt();
 		receipt.setNo("NA");
 		receipt.setCreatedAt(dayRepository.getCurrentBussinessDay().getId());
 		receipt.setCreatedBy(userService.getUserId(request));
-		receipt.setTill(cart.getTill());
+		receipt.setTill(till);
 		receipt.setCash(payment.getCash());
 		receipt.setCap(payment.getCap());
 		receipt.setCheque(payment.getCheque());
@@ -193,6 +255,9 @@ public class CartServiceImpl implements CartService {
 			receipt.setNo(generateReceiptNo(receipt));
 			receipt = receiptRepository.save(receipt);
 		}
+		returnReceipt = receipt;
+		
+		List<ReceiptDetail> rds = new ArrayList<ReceiptDetail>();
 		for(CartDetail cartDetail : cartDetails) {
 			if(cartDetail.isVoided() == false) {
 				ReceiptDetail rd = new ReceiptDetail();				
@@ -205,9 +270,11 @@ public class CartServiceImpl implements CartService {
 				rd.setSellingPriceVatExcl(cartDetail.getSellingPriceVatExcl());
 				rd.setDiscount((cartDetail.getDiscount()/100) * cartDetail.getSellingPriceVatIncl());
 				rd.setTax((cartDetail.getVat()/100) * cartDetail.getSellingPriceVatIncl());
-				receiptDetailRepository.saveAndFlush(rd);
+				rds.add(rd);
+				receiptDetailRepository.saveAndFlush(rd);				
 			}			
 		}
+		returnReceipt.setReceiptDetails(rds);
 		
 		Sale sale = new Sale();
 		
@@ -215,7 +282,7 @@ public class CartServiceImpl implements CartService {
 		sale.setCreatedBy(userService.getUserId(request));
 		sale.setDay(dayRepository.getCurrentBussinessDay());
 		sale.setReference("POS sales Receipt# "+receipt.getNo());
-		sale.setTill(cart.getTill());
+		sale.setTill(till);
 		sale = saleRepository.saveAndFlush(sale);
 		for(CartDetail cartDetail : cartDetails) {
 			if(cartDetail.isVoided() == false) {
@@ -234,14 +301,33 @@ public class CartServiceImpl implements CartService {
 				sd.setDiscount((cartDetail.getDiscount()/100) * cartDetail.getSellingPriceVatIncl());
 				sd.setTax((cartDetail.getVat()/100) * cartDetail.getSellingPriceVatIncl());
 				saleDetailRepository.saveAndFlush(sd);
+				
+				/**
+				 * Grab stock qty and update stock
+				 */
+				Product product = p.get();
+				double stock = product.getStock() - (cartDetail.getQty());
+				product.setStock(stock);
+				productRepository.saveAndFlush(product);
+				/**
+				 * Create stock card
+				 */
+				ProductStockCard stockCard = new ProductStockCard();
+				stockCard.setQtyOut(cartDetail.getQty());
+				stockCard.setProduct(product);
+				stockCard.setBalance(stock);
+				stockCard.setDay(dayRepository.getCurrentBussinessDay());
+				stockCard.setReference("POS Sales. Ref #: "+ receipt.getNo());
+				productStockCardService.save(stockCard);
+			}else {
+				voidedService.checkVoid(cartDetail.getId());
 			}
-			
 		}
 		for(CartDetail cartDetail : cartDetails) {				
 			cartDetailRepository.delete(cartDetail);
 		}
 		cartRepository.delete(cart);
-		return receipt;
+		return returnReceipt;
 	}
 	
 	private String generateReceiptNo(Receipt receipt) {

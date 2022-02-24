@@ -26,6 +26,7 @@ import com.orbix.api.domain.Product;
 import com.orbix.api.domain.Receipt;
 import com.orbix.api.domain.Till;
 import com.orbix.api.exceptions.NotFoundException;
+import com.orbix.api.repositories.CartDetailRepository;
 import com.orbix.api.repositories.CartRepository;
 import com.orbix.api.repositories.CustomerRepository;
 import com.orbix.api.repositories.SalesInvoiceRepository;
@@ -47,6 +48,7 @@ public class CartResource {
 	private final TillRepository tillRepository;
 	private final SalesInvoiceRepository salesInvoiceRepository;
 	private final CartRepository cartRepository;
+	private final CartDetailRepository cartDetailRepository;
 	private final 	CartService cartService;
 	private final 	AllocationService allocationService;
 	
@@ -87,6 +89,35 @@ public class CartResource {
 			@RequestBody CartDetail cartDetail){		
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/carts/update_qty").toUriString());
 		return ResponseEntity.created(uri).body(cartService.updateQty(cartDetail));
+	}
+	
+	@PostMapping("/carts/update_discount")
+	//@PreAuthorize("hasAnyAuthority('PRODUCT-CREATE')")
+	public ResponseEntity<Boolean>updateDiscount(
+			@RequestBody CartDetail cartDetail){		
+		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/carts/update_discount").toUriString());
+		return ResponseEntity.created(uri).body(cartService.updateDiscount(cartDetail));
+	}
+	
+	@PostMapping("/carts/void")
+	//@PreAuthorize("hasAnyAuthority('PRODUCT-CREATE')")
+	public ResponseEntity<Boolean>voidd(
+			@RequestBody CartDetail cartDetail,
+			HttpServletRequest request){		
+		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/carts/void").toUriString());
+		return ResponseEntity.created(uri).body(cartService.voidd(cartDetail, request));
+	}
+	
+	@PostMapping("/carts/unvoid")
+	//@PreAuthorize("hasAnyAuthority('PRODUCT-CREATE')")
+	public ResponseEntity<Boolean>unvoid(
+			@RequestBody CartDetail cartDetail){
+		Optional<CartDetail> d = cartDetailRepository.findById(cartDetail.getId());
+		if(!d.isPresent()) {
+			throw new NotFoundException("Detail not found");
+		}
+		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/carts/unvoid").toUriString());
+		return ResponseEntity.created(uri).body(cartService.unvoid(d.get()));
 	}
 	
 	@PostMapping("/carts/pay")

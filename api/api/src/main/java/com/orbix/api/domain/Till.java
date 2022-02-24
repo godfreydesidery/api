@@ -36,4 +36,18 @@ public class Till {
 	@Column(unique = true)
 	private String computerName;
 	private boolean active = true;
+	
+	private double cash = 0;
+	private double voucher = 0;
+	private double deposit = 0;
+	private double loyalty = 0;
+	private double crCard = 0;
+	private double cheque = 0;
+	private double cap = 0;
+	private double invoice = 0;
+	private double crNote = 0;
+	private double mobile = 0;
+	private double other = 0;
+	
+	private double floatBalance = 0;
 }

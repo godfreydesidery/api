@@ -22,5 +22,8 @@ public interface CartService {
 	Cart activateCart(Cart cart, Till till);
 	boolean addCartDetail(CartDetail cartDetail);
 	boolean updateQty(CartDetail cartDetail);
+	boolean updateDiscount(CartDetail cartDetail);
+	boolean voidd(CartDetail cartDetail, HttpServletRequest request);
+	boolean unvoid(CartDetail cartDetail);
 	Receipt pay(Payment payment, Cart cart, HttpServletRequest request);
 }
