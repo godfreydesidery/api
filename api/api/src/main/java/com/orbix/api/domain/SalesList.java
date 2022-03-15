@@ -36,8 +36,8 @@ import lombok.NoArgsConstructor;
 @Data  
 @NoArgsConstructor 
 @AllArgsConstructor
-@Table(name = "packing_lists")
-public class PackingList {
+@Table(name = "sales_lists")
+public class SalesList {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -45,6 +45,7 @@ public class PackingList {
 	@Column(unique = true)
 	private String no;
 	private String status;
+	private LocalDate issueDate;
 	private String comments;
 	
 	private Long createdBy;
@@ -53,6 +54,15 @@ public class PackingList {
 	private Long approvedAt;
 	private Long postedBy;
 	private Long postedAt;
+	
+	private double totalReturns = 0;
+	private double totalDamages = 0;
+	private double totalDiscounts = 0;
+	private double totalExpenditures = 0;
+	private double totalBank = 0;
+	private double totalCash = 0;
+	private double totalOther = 0;
+	private double totalDeficit = 0;
 	
 	@ManyToOne(targetEntity = Customer.class, fetch = FetchType.EAGER, optional = true)
     @JoinColumn(name = "customer_id", nullable = true , updatable = true)
@@ -64,8 +74,13 @@ public class PackingList {
     @OnDelete(action = OnDeleteAction.NO_ACTION)	
     private Employee employee;
 	
-	@OneToMany(targetEntity = PackingListDetail.class, mappedBy = "packingList", fetch = FetchType.EAGER, orphanRemoval = true)
+	@ManyToOne(targetEntity = PackingList.class, fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "packing_list_id", nullable = true , updatable = true)
+    @OnDelete(action = OnDeleteAction.NO_ACTION)	
+    private PackingList packingList;
+	
+	@OneToMany(targetEntity = SalesListDetail.class, mappedBy = "salesList", fetch = FetchType.EAGER, orphanRemoval = true)
     @Valid
-    @JsonIgnoreProperties("packingList")
-    private List<PackingListDetail> packingListDetails;
+    @JsonIgnoreProperties("salesList")
+    private List<SalesListDetail> salesListDetails;
 }

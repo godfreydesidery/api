@@ -13,13 +13,13 @@ import org.springframework.stereotype.Service;
 import com.orbix.api.accessories.Formater;
 import com.orbix.api.domain.DebtAllocation;
 import com.orbix.api.domain.Employee;
-import com.orbix.api.domain.PackingList;
+import com.orbix.api.domain.SalesList;
 import com.orbix.api.domain.Debt;
 import com.orbix.api.exceptions.InvalidOperationException;
 import com.orbix.api.exceptions.NotFoundException;
 import com.orbix.api.repositories.DebtAllocationRepository;
 import com.orbix.api.repositories.EmployeeRepository;
-import com.orbix.api.repositories.PackingListRepository;
+import com.orbix.api.repositories.SalesListRepository;
 import com.orbix.api.repositories.DayRepository;
 import com.orbix.api.repositories.DebtRepository;
 
@@ -41,7 +41,7 @@ public class DebtAllocationServiceImpl implements DebtAllocationService {
 	private final UserService userService;
 	private final DayService dayService;
 	private final DayRepository dayRepository;
-	private final PackingListRepository packingListRepository;
+	private final SalesListRepository salesListRepository;
 
 	@Override
 	public boolean allocate(Employee employee, Debt debt, HttpServletRequest request) {
@@ -53,8 +53,8 @@ public class DebtAllocationServiceImpl implements DebtAllocationService {
 		if(!d.isPresent()) {
 			throw new NotFoundException("Debt not found in database");
 		}
-		if(d.get().getPackingList() != null) {
-			if(e.get().getId() != d.get().getPackingList().getEmployee().getId()) {
+		if(d.get().getSalesList() != null) {
+			if(e.get().getId() != d.get().getSalesList().getEmployee().getId()) {
 				throw new InvalidOperationException("Employee and invoice do not match");
 			}
 		}else {
@@ -67,18 +67,18 @@ public class DebtAllocationServiceImpl implements DebtAllocationService {
 		}
 		double referenceBalance = 0;
 		double debtAllocationAmount = 0;
-		if(d.get().getPackingList() != null) {
-			referenceBalance = d.get().getPackingList().getTotalDeficit();
+		if(d.get().getSalesList() != null) {
+			referenceBalance = d.get().getSalesList().getTotalDeficit();
 			if(referenceBalance <= 0) {
 				throw new InvalidOperationException("Could not process, reference document has no deficit");
 			}
-			Optional<PackingList> p = packingListRepository.findById(d.get().getPackingList().getId());
+			Optional<SalesList> p = salesListRepository.findById(d.get().getSalesList().getId());
 			
 			if(employeeBalance >= debt.getBalance()) {
 				double balance = debt.getBalance();
 				p.get().setTotalOther(p.get().getTotalOther() + balance);
 				p.get().setTotalDeficit(p.get().getTotalDeficit() - balance);
-				packingListRepository.saveAndFlush(p.get());
+				salesListRepository.saveAndFlush(p.get());
 				double newEmployeeBalance = employeeBalance - debt.getBalance();
 				balance = 0;
 				debtAllocationAmount = debt.getBalance();
@@ -90,7 +90,7 @@ public class DebtAllocationServiceImpl implements DebtAllocationService {
 			}else if(employeeBalance < debt.getBalance()) {
 				p.get().setTotalOther(p.get().getTotalOther() + employeeBalance);
 				p.get().setTotalDeficit(p.get().getTotalDeficit() - employeeBalance);
-				packingListRepository.saveAndFlush(p.get());
+				salesListRepository.saveAndFlush(p.get());
 				double newEmployeeBalance = 0;
 				double balance = debt.getBalance() - employeeBalance;
 				debtAllocationAmount = employeeBalance;

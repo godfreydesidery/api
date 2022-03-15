@@ -32,32 +32,27 @@ import lombok.NoArgsConstructor;
 @Data  
 @NoArgsConstructor 
 @AllArgsConstructor
-@Table(name = "debts")
-public class Debt {
+@Table(name = "sales_debt_histories")
+public class SalesDebtHistory {
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-	@NotBlank
-	@Column(unique = true)
-	private String no;
-	private String status;
+	
 	@NotNull
-	private double amount = 0;
+	private double cr = 0;
+	@NotNull
+	private double dr = 0;
 	@NotNull
 	private double balance = 0;
 	
-	@ManyToOne(targetEntity = Employee.class, fetch = FetchType.EAGER, optional = true)
-    @JoinColumn(name = "employee_id", nullable = true , updatable = true)
-    @OnDelete(action = OnDeleteAction.NO_ACTION)	
-    private Employee employee;
+	private String reference;
 	
-	@ManyToOne(targetEntity = Day.class, fetch = FetchType.EAGER, optional = true)
-    @JoinColumn(name = "day_id", nullable = true , updatable = false)
-    @OnDelete(action = OnDeleteAction.NO_ACTION)	
-    private Day day;
+	private Long createdBy;
+	private Long createdAt;
 	
-	@OneToOne(targetEntity = SalesList.class, fetch = FetchType.EAGER, optional = true)
-    @JoinColumn(name = "sales_list_id", nullable = true , updatable = false)
+	@ManyToOne(targetEntity = SalesDebt.class, fetch = FetchType.EAGER, optional = true)
+    @JoinColumn(name = "sales_debt_id", nullable = true , updatable = true)
     @OnDelete(action = OnDeleteAction.NO_ACTION)	
-    private SalesList salesList;
+    private SalesDebt salesDebt;
+	
 }

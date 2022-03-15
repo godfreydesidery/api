@@ -28,6 +28,5 @@ public interface PackingListService {
 	List<PackingListDetailModel>getAllDetails(PackingList packingList);	
 	boolean archive(PackingList packingList);
 	boolean archiveAll();
-	PackingListModel print(PackingList packingList);
-	PackingListModel post(PackingList packingList, HttpServletRequest request);	
+	PackingListModel approve(PackingList packingList);
 }

@@ -106,7 +106,6 @@ public class PackingListResource {
 		inv.setCustomer(c.get());
 		inv.setEmployee(e.get());
 		inv.setStatus("PENDING");
-		inv.setIssueDate(packingList.getIssueDate());
 		inv.setComments(packingList.getComments());	
 		inv.setCreatedBy(userService.getUserId(request));
 		inv.setCreatedAt(dayService.getDayId());
@@ -145,7 +144,6 @@ public class PackingListResource {
 		}		
 		l.get().setCustomer(c.get());
 		l.get().setEmployee(e.get());
-		l.get().setIssueDate(packingList.getIssueDate());
 		l.get().setComments(packingList.getComments());
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/packing_lists/update").toUriString());
 		return ResponseEntity.created(uri).body(packingListService.save(l.get()));
@@ -160,15 +158,7 @@ public class PackingListResource {
 		if(!l.isPresent()) {
 			throw new NotFoundException("PACKING_LIST not found");
 		}
-		if(l.get().getStatus().equals("PENDING")) {
-			l.get().setTotalReturns(packingList.getTotalReturns());
-			l.get().setTotalDamages(packingList.getTotalDamages());
-			l.get().setTotalDeficit(packingList.getTotalDeficit());
-			l.get().setTotalDiscounts(packingList.getTotalDiscounts());
-			l.get().setTotalExpenditures(packingList.getTotalExpenditures());
-			l.get().setTotalBank(packingList.getTotalBank());
-			l.get().setTotalCash(packingList.getTotalCash());
-			
+		if(l.get().getStatus().equals("PENDING")) {			
 			l.get().setApprovedBy(userService.getUserId(request));
 			l.get().setApprovedAt(dayService.getDayId());
 			l.get().setStatus("APPROVED");
@@ -176,35 +166,7 @@ public class PackingListResource {
 			throw new InvalidOperationException("Could not approve, not a PENDING PACKING_LIST");
 		}
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/packing_lists/approve").toUriString());
-		return ResponseEntity.created(uri).body(packingListService.print(l.get()));
-	}
-	
-	@PutMapping("/packing_lists/post")
-	@PreAuthorize("hasAnyAuthority('PACKING_LIST-APPROVE')")
-	public ResponseEntity<PackingListModel>postPackingList(
-			@RequestBody PackingList packingList,
-			HttpServletRequest request){		
-		Optional<PackingList> l = packingListRepository.findById(packingList.getId());
-		if(!l.isPresent()) {
-			throw new NotFoundException("PACKING_LIST not found");
-		}
-		if(l.get().getStatus().equals("APPROVED")) {
-			l.get().setTotalReturns(packingList.getTotalReturns());
-			l.get().setTotalDamages(packingList.getTotalDamages());
-			l.get().setTotalDeficit(packingList.getTotalDeficit());
-			l.get().setTotalDiscounts(packingList.getTotalDiscounts());
-			l.get().setTotalExpenditures(packingList.getTotalExpenditures());
-			l.get().setTotalBank(packingList.getTotalBank());
-			l.get().setTotalCash(packingList.getTotalCash());
-			
-			l.get().setPostedBy(userService.getUserId(request));
-			l.get().setPostedAt(dayService.getDayId());
-			l.get().setStatus("POSTED");
-		}else {
-			throw new InvalidOperationException("Could not post, not an APPROVED PACKING LIST");
-		}
-		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/packing_lists/post").toUriString());
-		return ResponseEntity.created(uri).body(packingListService.post(l.get(), request));
+		return ResponseEntity.created(uri).body(packingListService.approve(l.get()));
 	}
 	
 	@PutMapping("/packing_lists/cancel")
@@ -258,19 +220,7 @@ public class PackingListResource {
 		}
 		if((packingListDetail.getTotalPacked() != packingListDetail.getPreviousReturns() + packingListDetail.getQtyIssued())) {
 			throw new InvalidEntryException("Total packed quantity must be equal to returns and quantity issued");
-		}
-		if(packingListDetail.getQtySold() < 0) {
-			throw new InvalidEntryException("Quantity sold must be positive");
-		}
-		if(packingListDetail.getQtyOffered() < 0) {
-			throw new InvalidEntryException("Quantity offered must be positive");
-		}
-		if(packingListDetail.getQtyReturned() < 0) {
-			throw new InvalidEntryException("Quantity returned must be positive");
-		}
-		if(packingListDetail.getQtyDamaged() < 0) {
-			throw new InvalidEntryException("Quantity damaged must be positive");
-		}					
+		}				
 		Optional<PackingList> l = packingListRepository.findById(packingListDetail.getPackingList().getId());
 		if(!l.isPresent()) {
 			throw new NotFoundException("PACKING_LIST not found");
@@ -294,19 +244,11 @@ public class PackingListResource {
 				detail.setPreviousReturns(packingListDetail.getPreviousReturns());
 				detail.setQtyIssued(packingListDetail.getQtyIssued());
 				detail.setTotalPacked(packingListDetail.getTotalPacked());
+				detail.setCostPriceVatIncl(packingListDetail.getCostPriceVatIncl());
+				detail.setCostPriceVatExcl(packingListDetail.getCostPriceVatExcl());
 				detail.setSellingPriceVatIncl(packingListDetail.getSellingPriceVatIncl());
 				detail.setSellingPriceVatExcl(packingListDetail.getSellingPriceVatExcl());
-			}
-			if(l.get().getStatus().equals("APPROVED")) {
-				if(packingListDetail.getTotalPacked() != packingListDetail.getQtySold() + packingListDetail.getQtyOffered() + packingListDetail.getQtyReturned() + packingListDetail.getQtyDamaged()) {
-					throw new InvalidEntryException("Total quantity must be a sum of qty sold, qty offered, qty returned and qty damaged");
-				}
-				detail.setQtySold(packingListDetail.getQtySold());
-				detail.setQtyOffered(packingListDetail.getQtyOffered());
-				detail.setQtyReturned(packingListDetail.getQtyReturned());
-				detail.setQtyDamaged(packingListDetail.getQtyDamaged());
-			}
-			
+			}						
 		}else {
 			/**
 			 * Create new detail
@@ -316,6 +258,8 @@ public class PackingListResource {
 			detail.setPreviousReturns(packingListDetail.getPreviousReturns());
 			detail.setQtyIssued(packingListDetail.getQtyIssued());
 			detail.setTotalPacked(packingListDetail.getTotalPacked());
+			detail.setCostPriceVatIncl(packingListDetail.getCostPriceVatIncl());
+			detail.setCostPriceVatExcl(packingListDetail.getCostPriceVatExcl());
 			detail.setSellingPriceVatIncl(packingListDetail.getSellingPriceVatIncl());
 			detail.setSellingPriceVatExcl(packingListDetail.getSellingPriceVatExcl());
 		}		
@@ -339,10 +283,6 @@ public class PackingListResource {
 		detail.setTotalPacked((d.get().getTotalPacked()));
 		detail.setSellingPriceVatIncl((d.get().getSellingPriceVatIncl()));
 		detail.setSellingPriceVatExcl((d.get().getSellingPriceVatExcl()));
-		detail.setQtySold((d.get().getQtySold()));
-		detail.setQtyOffered((d.get().getQtyOffered()));
-		detail.setQtyReturned((d.get().getQtyReturned()));
-		detail.setQtyDamaged((d.get().getQtyDamaged()));
 		
 		URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/packing_list_details/get").toUriString());
 		return ResponseEntity.created(uri).body(detail);

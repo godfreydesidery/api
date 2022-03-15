@@ -3,11 +3,18 @@
  */
 package com.orbix.api.accessories;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 /**
  * @author GODFREY
  *
  */
 public class Formater {
+	public static String formatWithCurrentDate(String prefix, String suffix) {
+		DateTimeFormatter f = DateTimeFormatter.ofPattern("yyyyMMdd");
+		return prefix + f.format(LocalDateTime.now()) + suffix;
+	}
 	public static String formatNine(String value) {
 		String formattedValue = "";
 		
@@ -75,5 +82,5 @@ public class Formater {
     	formattedValue = sb.toString();
 		
 		return formattedValue;
-	}
+	}	
 }

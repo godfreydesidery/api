@@ -21,6 +21,8 @@ import com.orbix.api.domain.ProductDamage;
 import com.orbix.api.domain.ProductOffer;
 import com.orbix.api.domain.Sale;
 import com.orbix.api.domain.SaleDetail;
+import com.orbix.api.domain.SalesList;
+import com.orbix.api.domain.SalesListDetail;
 import com.orbix.api.domain.ProductStockCard;
 import com.orbix.api.exceptions.InvalidEntryException;
 import com.orbix.api.exceptions.InvalidOperationException;
@@ -33,6 +35,8 @@ import com.orbix.api.repositories.PackingListRepository;
 import com.orbix.api.repositories.ProductRepository;
 import com.orbix.api.repositories.SaleDetailRepository;
 import com.orbix.api.repositories.SaleRepository;
+import com.orbix.api.repositories.SalesListDetailRepository;
+import com.orbix.api.repositories.SalesListRepository;
 import com.orbix.api.repositories.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -49,6 +53,8 @@ import lombok.extern.slf4j.Slf4j;
 public class PackingListServiceImpl implements PackingListService {
 	
 	private final PackingListRepository packingListRepository;
+	private final SalesListRepository salesListRepository;
+	private final SalesListDetailRepository salesListDetailRepository;
 	private final PackingListDetailRepository packingListDetailRepository;
 	private final UserRepository userRepository;
 	private final UserService userService;
@@ -61,6 +67,7 @@ public class PackingListServiceImpl implements PackingListService {
 	private final ProductDamageService productDamageService;
 	private final ProductOfferService productOfferService;
 	private final DebtService debtService;
+	private final SalesListService salesListService;
 
 	@Override
 	public PackingListModel save(PackingList packingList) {
@@ -80,11 +87,6 @@ public class PackingListServiceImpl implements PackingListService {
 		double totalReturns = 0;
 		double totalOffered = 0;
 		double totalDamages = 0;
-		double totalDiscounts = pcl.getTotalDiscounts();
-		double totalExpenditures = pcl.getTotalExpenditures();
-		double totalBank = pcl.getTotalBank();
-		double totalCash = pcl.getTotalCash();
-		double totalDeficit = pcl.getTotalDeficit();
 		
 		PackingListModel model = new PackingListModel();
 		model.setId(pcl.getId());
@@ -92,15 +94,7 @@ public class PackingListServiceImpl implements PackingListService {
 		model.setCustomer(pcl.getCustomer());
 		model.setEmployee(pcl.getEmployee());
 		model.setStatus(pcl.getStatus());
-		model.setIssueDate(pcl.getIssueDate());		
 		model.setComments(pcl.getComments());
-		model.setTotalBank(pcl.getTotalBank());
-		model.setTotalCash(pcl.getTotalCash());
-		model.setTotalDamages(pcl.getTotalDamages());
-		model.setTotalDeficit(pcl.getTotalDeficit());
-		model.setTotalDiscounts(pcl.getTotalDiscounts());
-		model.setTotalExpenditures(pcl.getTotalReturns());
-		model.setTotalReturns(pcl.getTotalReturns());
 		if(pcl.getCreatedAt() != null && pcl.getCreatedBy() != null) {
 			model.setCreated(dayRepository.findById(pcl.getCreatedAt()).get().getBussinessDate() +" "+ userRepository.getAlias(pcl.getCreatedBy()));
 		}
@@ -118,12 +112,8 @@ public class PackingListServiceImpl implements PackingListService {
 				detail.setId(d.getId());
 				detail.setPreviousReturns(d.getPreviousReturns());
 				detail.setProduct(d.getProduct());
-				detail.setQtyDamaged(d.getQtyDamaged());
 				detail.setQtyIssued(d.getQtyIssued());
 				detail.setTotalPacked(d.getTotalPacked());
-				detail.setQtyOffered(d.getQtyOffered());
-				detail.setQtyReturned(d.getQtyReturned());
-				detail.setQtySold(d.getQtySold());
 				detail.setSellingPriceVatIncl(d.getSellingPriceVatIncl());
 				detail.setSellingPriceVatExcl(d.getSellingPriceVatExcl());
 				details.add(detail);
@@ -131,10 +121,6 @@ public class PackingListServiceImpl implements PackingListService {
 				totalPreviousReturns = totalPreviousReturns + d.getPreviousReturns() * d.getSellingPriceVatIncl();
 				totalAmountIssued = totalAmountIssued + d.getQtyIssued() * d.getSellingPriceVatIncl();
 				totalAmountPacked = totalAmountPacked + d.getTotalPacked() * d.getSellingPriceVatIncl();
-				totalSales = totalSales + d.getQtySold() * d.getSellingPriceVatIncl();
-				totalReturns = totalReturns + d.getQtyReturned() * d.getSellingPriceVatIncl();
-				totalOffered = totalOffered + d.getQtyOffered() * d.getSellingPriceVatIncl();
-				totalDamages = totalDamages + d.getQtyDamaged() * d.getSellingPriceVatIncl();	
 			}
 			model.setPackingListDetails(details);
 			
@@ -146,11 +132,6 @@ public class PackingListServiceImpl implements PackingListService {
 			model.setTotalReturns(totalReturns);
 			model.setTotalDamages(totalDamages);
 			
-			model.setTotalDiscounts(totalDiscounts);
-			model.setTotalExpenditures(totalExpenditures);
-			model.setTotalBank(totalBank);
-			model.setTotalCash(totalCash);
-			model.setTotalDeficit(totalDeficit);
 		}
 		
 		return model;
@@ -168,7 +149,6 @@ public class PackingListServiceImpl implements PackingListService {
 		model.setCustomer(pcl.get().getCustomer());
 		model.setEmployee(pcl.get().getEmployee());
 		model.setStatus(pcl.get().getStatus());
-		model.setIssueDate(pcl.get().getIssueDate());		
 		model.setComments(pcl.get().getComments());
 		
 		double totalPreviousReturns = 0;
@@ -178,11 +158,6 @@ public class PackingListServiceImpl implements PackingListService {
 		double totalReturns = 0;
 		double totalOffered = 0;
 		double totalDamages = 0;
-		double totalDiscounts = pcl.get().getTotalDiscounts();
-		double totalExpenditures = pcl.get().getTotalExpenditures();
-		double totalBank = pcl.get().getTotalBank();
-		double totalCash = pcl.get().getTotalCash();
-		double totalDeficit = pcl.get().getTotalDeficit();
 		
 		if(pcl.get().getCreatedAt() != null && pcl.get().getCreatedBy() != null) {
 			model.setCreated(dayRepository.findById(pcl.get().getCreatedAt()).get().getBussinessDate() +" "+ userRepository.getAlias(pcl.get().getCreatedBy()));
@@ -200,23 +175,15 @@ public class PackingListServiceImpl implements PackingListService {
 			detail.setId(d.getId());
 			detail.setPreviousReturns(d.getPreviousReturns());
 			detail.setProduct(d.getProduct());
-			detail.setQtyDamaged(d.getQtyDamaged());
 			detail.setQtyIssued(d.getQtyIssued());
 			detail.setTotalPacked(d.getTotalPacked());
-			detail.setQtyOffered(d.getQtyOffered());
-			detail.setQtyReturned(d.getQtyReturned());
-			detail.setQtySold(d.getQtySold());
 			detail.setSellingPriceVatIncl(d.getSellingPriceVatIncl());
 			detail.setSellingPriceVatExcl(d.getSellingPriceVatExcl());
 			details.add(detail);
 			
 			totalPreviousReturns = totalPreviousReturns + d.getPreviousReturns() * d.getSellingPriceVatIncl();
 			totalAmountIssued = totalAmountIssued + d.getQtyIssued() * d.getSellingPriceVatIncl();
-			totalAmountPacked = totalAmountPacked + d.getTotalPacked() * d.getSellingPriceVatIncl();
-			totalSales = totalSales + d.getQtySold() * d.getSellingPriceVatIncl();
-			totalReturns = totalReturns + d.getQtyReturned() * d.getSellingPriceVatIncl();
-			totalOffered = totalOffered + d.getQtyOffered() * d.getSellingPriceVatIncl();
-			totalDamages = totalDamages + d.getQtyDamaged() * d.getSellingPriceVatIncl();	
+			totalAmountPacked = totalAmountPacked + d.getTotalPacked() * d.getSellingPriceVatIncl();			
 		}
 		model.setPackingListDetails(details);
 		
@@ -227,12 +194,6 @@ public class PackingListServiceImpl implements PackingListService {
 		model.setTotalOffered(totalOffered);
 		model.setTotalReturns(totalReturns);
 		model.setTotalDamages(totalDamages);
-		
-		model.setTotalDiscounts(totalDiscounts);
-		model.setTotalExpenditures(totalExpenditures);
-		model.setTotalBank(totalBank);
-		model.setTotalCash(totalCash);
-		model.setTotalDeficit(totalDeficit);
 		
 		return model;
 	}
@@ -249,7 +210,6 @@ public class PackingListServiceImpl implements PackingListService {
 		model.setCustomer(pcl.get().getCustomer());
 		model.setEmployee(pcl.get().getEmployee());
 		model.setStatus(pcl.get().getStatus());
-		model.setIssueDate(pcl.get().getIssueDate());		
 		model.setComments(pcl.get().getComments());
 		
 		double totalPreviousReturns = 0;
@@ -258,12 +218,7 @@ public class PackingListServiceImpl implements PackingListService {
 		double totalSales = 0;
 		double totalReturns = 0;
 		double totalOffered = 0;
-		double totalDamages = 0;
-		double totalDiscounts = pcl.get().getTotalDiscounts();
-		double totalExpenditures = pcl.get().getTotalExpenditures();
-		double totalBank = pcl.get().getTotalBank();
-		double totalCash = pcl.get().getTotalCash();
-		double totalDeficit = pcl.get().getTotalDeficit();
+		double totalDamages = 0;		
 		
 		if(pcl.get().getCreatedAt() != null && pcl.get().getCreatedBy() != null) {
 			model.setCreated(dayRepository.findById(pcl.get().getCreatedAt()).get().getBussinessDate() +" "+ userRepository.getAlias(pcl.get().getCreatedBy()));
@@ -281,23 +236,15 @@ public class PackingListServiceImpl implements PackingListService {
 			detail.setId(d.getId());
 			detail.setPreviousReturns(d.getPreviousReturns());
 			detail.setProduct(d.getProduct());
-			detail.setQtyDamaged(d.getQtyDamaged());
 			detail.setQtyIssued(d.getQtyIssued());
 			detail.setTotalPacked(d.getTotalPacked());
-			detail.setQtyOffered(d.getQtyOffered());
-			detail.setQtyReturned(d.getQtyReturned());
-			detail.setQtySold(d.getQtySold());
 			detail.setSellingPriceVatIncl(d.getSellingPriceVatIncl());
 			detail.setSellingPriceVatExcl(d.getSellingPriceVatExcl());
 			details.add(detail);
 			
 			totalPreviousReturns = totalPreviousReturns + d.getPreviousReturns() * d.getSellingPriceVatIncl();
 			totalAmountIssued = totalAmountIssued + d.getQtyIssued() * d.getSellingPriceVatIncl();
-			totalAmountPacked = totalAmountPacked + d.getTotalPacked() * d.getSellingPriceVatIncl();
-			totalSales = totalSales + d.getQtySold() * d.getSellingPriceVatIncl();
-			totalReturns = totalReturns + d.getQtyReturned() * d.getSellingPriceVatIncl();
-			totalOffered = totalOffered + d.getQtyOffered() * d.getSellingPriceVatIncl();
-			totalDamages = totalDamages + d.getQtyDamaged() * d.getSellingPriceVatIncl();
+			totalAmountPacked = totalAmountPacked + d.getTotalPacked() * d.getSellingPriceVatIncl();			
 		}
 		model.setPackingListDetails(details);
 		
@@ -308,12 +255,6 @@ public class PackingListServiceImpl implements PackingListService {
 		model.setTotalOffered(totalOffered);
 		model.setTotalReturns(totalReturns);
 		model.setTotalDamages(totalDamages);
-		
-		model.setTotalDiscounts(totalDiscounts);
-		model.setTotalExpenditures(totalExpenditures);
-		model.setTotalBank(totalBank);
-		model.setTotalCash(totalCash);
-		model.setTotalDeficit(totalDeficit);
 		
 		return model;
 	}
@@ -342,16 +283,8 @@ public class PackingListServiceImpl implements PackingListService {
 			model.setNo(pcl.getNo());
 			model.setCustomer(pcl.getCustomer());
 			model.setStatus(pcl.getStatus());
-			model.setIssueDate(pcl.getIssueDate());		
 			model.setComments(pcl.getComments());
-			model.setTotalBank(pcl.getTotalBank());
-			model.setTotalCash(pcl.getTotalCash());
-			model.setTotalDamages(pcl.getTotalDamages());
-			model.setTotalDeficit(pcl.getTotalDeficit());
-			model.setTotalDiscounts(pcl.getTotalDiscounts());
-			model.setTotalExpenditures(pcl.getTotalReturns());
-			model.setTotalReturns(pcl.getTotalReturns());
-			
+						
 			if(pcl.getCreatedAt() != null && pcl.getCreatedBy() != null) {
 				model.setCreated(dayRepository.findById(pcl.getCreatedAt()).get().getBussinessDate() +" "+ userRepository.getAlias(pcl.getCreatedBy()));
 			}
@@ -376,12 +309,10 @@ public class PackingListServiceImpl implements PackingListService {
 		detail.setId(d.getId());
 		detail.setPreviousReturns(d.getPreviousReturns());
 		detail.setProduct(d.getProduct());
-		detail.setQtyDamaged(d.getQtyDamaged());
 		detail.setQtyIssued(d.getQtyIssued());
 		detail.setTotalPacked(d.getTotalPacked());
-		detail.setQtyOffered(d.getQtyOffered());
-		detail.setQtyReturned(d.getQtyReturned());
-		detail.setQtySold(d.getQtySold());
+		detail.setCostPriceVatIncl(d.getCostPriceVatIncl());
+		detail.setCostPriceVatExcl(d.getCostPriceVatExcl());
 		detail.setSellingPriceVatIncl(d.getSellingPriceVatIncl());
 		detail.setSellingPriceVatExcl(d.getSellingPriceVatExcl());
 		return detail;
@@ -397,12 +328,8 @@ public class PackingListServiceImpl implements PackingListService {
 		detail.setId(d.get().getId());
 		detail.setPreviousReturns(d.get().getPreviousReturns());
 		detail.setProduct(d.get().getProduct());
-		detail.setQtyDamaged(d.get().getQtyDamaged());
 		detail.setQtyIssued(d.get().getQtyIssued());
 		detail.setTotalPacked(d.get().getTotalPacked());
-		detail.setQtyOffered(d.get().getQtyOffered());
-		detail.setQtyReturned(d.get().getQtyReturned());
-		detail.setQtySold(d.get().getQtySold());
 		detail.setSellingPriceVatIncl(d.get().getSellingPriceVatIncl());
 		detail.setSellingPriceVatExcl(d.get().getSellingPriceVatExcl());
 		return detail;
@@ -426,12 +353,8 @@ public class PackingListServiceImpl implements PackingListService {
 			model.setId(detail.getId());
 			model.setPreviousReturns(detail.getPreviousReturns());
 			model.setProduct(detail.getProduct());
-			model.setQtyDamaged(detail.getQtyDamaged());
 			model.setQtyIssued(detail.getQtyIssued());
 			model.setTotalPacked(detail.getTotalPacked());
-			model.setQtyOffered(detail.getQtyOffered());
-			model.setQtyReturned(detail.getQtyReturned());
-			model.setQtySold(detail.getQtySold());
 			model.setSellingPriceVatIncl(detail.getSellingPriceVatIncl());
 			model.setSellingPriceVatExcl(detail.getSellingPriceVatExcl());
 			models.add(model);
@@ -443,10 +366,7 @@ public class PackingListServiceImpl implements PackingListService {
 	public boolean archive(PackingList packingList) {
 		if(!packingList.getStatus().equals("POSTED")) {
 			throw new InvalidOperationException("Could not process, only a posted packing list can be archived");
-		}
-		if(packingList.getTotalDeficit() > 0) {
-			throw new InvalidOperationException("Could not process, non debt free document can not be archived");
-		}
+		}		
 		packingList.setStatus("ARCHIVED");
 		packingListRepository.saveAndFlush(packingList);
 		return true;
@@ -458,46 +378,43 @@ public class PackingListServiceImpl implements PackingListService {
 		if(packingLists.isEmpty()) {
 			throw new NotFoundException("No Packing List to archive");
 		}
-		for(PackingList p : packingLists) {	
-			if(!(p.getTotalDeficit() > 0)) {
-				p.setStatus("ARCHIVED");
-				packingListRepository.saveAndFlush(p);
-			}		
+		for(PackingList p : packingLists) {				
+			p.setStatus("ARCHIVED");
+			packingListRepository.saveAndFlush(p);
 		}
 		return true;
 	}
 	
+	/**
+	 * After approving, generate sales list, note: this should be performed in sales list service
+	 */
+	
 	@Override
-	public PackingListModel print(PackingList packingList) {
+	public PackingListModel approve(PackingList packingList) {
 		PackingList pcl = packingListRepository.saveAndFlush(packingList);
 		List<PackingListDetail> details = pcl.getPackingListDetails();
 		double totalPreviousReturns = 0;
 		double totalAmountIssued = 0;
 		double totalAmountPacked = 0;
-		double totalSales = 0;
-		double totalReturns = 0;
-		double totalOffered = 0;
-		double totalDamages = 0;
-		double totalDiscounts = pcl.getTotalDiscounts();
-		double totalExpenditures = pcl.getTotalExpenditures();
-		double totalBank = pcl.getTotalBank();
-		double totalCash = pcl.getTotalCash();
-		double totalDeficit = pcl.getTotalDeficit();
-		if(totalDiscounts != 0) {
-			throw new InvalidEntryException("Invalid entry in discount amount");
+		
+		/**
+		 * Create a new Sales list
+		 */
+		SalesList salesList = new SalesList();
+		salesList.setNo("NA");
+		salesList.setPackingList(pcl);
+		salesList.setCustomer(pcl.getCustomer());
+		salesList.setEmployee(pcl.getEmployee());
+		salesList.setStatus("PENDING");
+		salesList.setCreatedBy(pcl.getApprovedBy());
+		salesList.setCreatedAt(pcl.getApprovedAt());
+		salesList = salesListRepository.saveAndFlush(salesList);
+		
+		if(salesList.getNo().equals("NA")) {
+			salesList.setNo(salesListService.generateSalesListNo(salesList));
+			salesList = salesListRepository.save(salesList);
 		}
-		if(totalExpenditures != 0) {
-			throw new InvalidEntryException("Invalid entry in expenditure amount");
-		}
-		if(totalBank != 0) {
-			throw new InvalidEntryException("Invalid entry in amount to bank");
-		}
-		if(totalCash != 0) {
-			throw new InvalidEntryException("Invalid entry in cash amount");
-		}
-		if(totalDeficit != 0) {
-			throw new InvalidEntryException("Invalid entry in deficit amount");
-		}
+		
 		for(PackingListDetail d : details) {				
 			/**
 			 * Grab stock qty and update stock
@@ -514,7 +431,7 @@ public class PackingListServiceImpl implements PackingListService {
 			stockCard.setProduct(product);
 			stockCard.setBalance(stock);
 			stockCard.setDay(dayRepository.getCurrentBussinessDay());
-			stockCard.setReference("To Packing List. Ref #: "+pcl.getNo());
+			stockCard.setReference("To Sales List. Ref #: "+salesList.getNo());
 			productStockCardService.save(stockCard);
 			
 			/**
@@ -523,33 +440,29 @@ public class PackingListServiceImpl implements PackingListService {
 			totalPreviousReturns = totalPreviousReturns + d.getPreviousReturns() * d.getSellingPriceVatIncl();
 			totalAmountIssued = totalAmountIssued + d.getQtyIssued() * d.getSellingPriceVatIncl();
 			totalAmountPacked = totalAmountPacked + d.getTotalPacked() * d.getSellingPriceVatIncl();
-			totalSales = totalSales + d.getQtySold() * d.getSellingPriceVatIncl();
-			totalReturns = totalReturns + d.getQtyReturned() * d.getSellingPriceVatIncl();
-			totalOffered = totalOffered + d.getQtyOffered() * d.getSellingPriceVatIncl();
-			totalDamages = totalDamages + d.getQtyDamaged() * d.getSellingPriceVatIncl();				
+			
+			/**
+			 * Create a new sales detail
+			 */
+			SalesListDetail salesListDetail = new SalesListDetail();
+			salesListDetail.setSalesList(salesList);			
+			salesListDetail.setProduct(d.getProduct());
+			salesListDetail.setTotalPacked(d.getTotalPacked());
+			salesListDetail.setCostPriceVatIncl(d.getCostPriceVatIncl());
+			salesListDetail.setCostPriceVatExcl(d.getCostPriceVatExcl());
+			salesListDetail.setSellingPriceVatIncl(d.getSellingPriceVatIncl());
+			salesListDetail.setSellingPriceVatExcl(d.getSellingPriceVatExcl());
+			salesListDetailRepository.saveAndFlush(salesListDetail);
 		}
 		if(totalAmountPacked != totalPreviousReturns + totalAmountIssued) {
 			throw new InvalidEntryException("Total packed must be equal to sum of previous returns and amount issued");
 		}
-		if(totalSales != 0) {
-			throw new InvalidEntryException("Invalid entry in sales");
-		}
-		if(totalReturns != 0) {
-			throw new InvalidEntryException("Invalid entry in total returns");
-		}
-		if(totalOffered != 0) {
-			throw new InvalidEntryException("Invalid entry in total offered");
-		}
-		if(totalDamages != 0) {
-			throw new InvalidEntryException("Invalid entry in total damages");
-		}
 		
 		PackingListModel model = new PackingListModel();
 		model.setId(pcl.getId());
 		model.setNo(pcl.getNo());
 		model.setCustomer(pcl.getCustomer());
 		model.setStatus(pcl.getStatus());
-		model.setIssueDate(pcl.getIssueDate());		
 		model.setComments(pcl.getComments());
 		if(pcl.getCreatedAt() != null && pcl.getCreatedBy() != null) {
 			model.setCreated(dayRepository.findById(pcl.getCreatedAt()).get().getBussinessDate() +" "+ userRepository.getAlias(pcl.getCreatedBy()));
@@ -567,12 +480,8 @@ public class PackingListServiceImpl implements PackingListService {
 			detail.setId(d.getId());
 			detail.setPreviousReturns(d.getPreviousReturns());
 			detail.setProduct(d.getProduct());
-			detail.setQtyDamaged(d.getQtyDamaged());
 			detail.setQtyIssued(d.getQtyIssued());
 			detail.setTotalPacked(d.getTotalPacked());
-			detail.setQtyOffered(d.getQtyOffered());
-			detail.setQtyReturned(d.getQtyReturned());
-			detail.setQtySold(d.getQtySold());
 			detail.setSellingPriceVatIncl(d.getSellingPriceVatIncl());
 			detail.setSellingPriceVatExcl(d.getSellingPriceVatExcl());
 			modelDetails.add(detail);
@@ -582,216 +491,10 @@ public class PackingListServiceImpl implements PackingListService {
 		model.setTotalPreviousReturns(totalPreviousReturns);
 		model.setTotalAmountIssued(totalAmountIssued);
 		model.setTotalAmountPacked(totalAmountPacked);
-		model.setTotalSales(totalSales);
-		model.setTotalOffered(totalOffered);
-		model.setTotalReturns(totalReturns);
-		model.setTotalDamages(totalDamages);
-		
-		model.setTotalDiscounts(totalDiscounts);
-		model.setTotalExpenditures(totalExpenditures);
-		model.setTotalBank(totalBank);
-		model.setTotalCash(totalCash);
-		model.setTotalDeficit(totalDeficit);
 		
 		return model;
 	}
 
-	@Override
-	public PackingListModel post(PackingList packingList, HttpServletRequest request) {	
-		PackingList pcl = packingListRepository.saveAndFlush(packingList);
-		List<PackingListDetail> details = pcl.getPackingListDetails();
-		Sale sale = new Sale();
-		sale.setCreatedAt(dayRepository.getCurrentBussinessDay().getId());
-		sale.setCreatedBy(userService.getUserId(request));
-		sale.setDay(dayRepository.getCurrentBussinessDay());
-		sale.setReference("Packing list sales Ref# "+pcl.getNo());
-		sale = saleRepository.saveAndFlush(sale);
-		
-		double totalPreviousReturns = 0;
-		double totalAmountIssued = 0;
-		double totalAmountPacked = 0;
-		double totalSales = 0;
-		double totalReturns = 0;
-		double totalOffered = 0;
-		double totalDamages = 0;
-		double totalDiscounts = pcl.getTotalDiscounts();
-		double totalExpenditures = pcl.getTotalExpenditures();
-		double totalBank = pcl.getTotalBank();
-		double totalCash = pcl.getTotalCash();
-		double totalDeficit = pcl.getTotalDeficit();
-		
-		for(PackingListDetail d : details) {
-			/**
-			 * Grab stock qty and update stock
-			 */
-			Product product =productRepository.findById(d.getProduct().getId()).get();
-			double stock = product.getStock() + (d.getQtyReturned());
-			product.setStock(stock);
-			productRepository.saveAndFlush(product);
-			/**
-			 * Create stock card
-			 */
-			ProductStockCard stockCard = new ProductStockCard();
-			stockCard.setQtyIn(d.getQtyReturned());
-			stockCard.setProduct(product);
-			stockCard.setBalance(stock);
-			stockCard.setDay(dayRepository.getCurrentBussinessDay());
-			stockCard.setReference("Returns. Ref #: "+pcl.getNo());
-			productStockCardService.save(stockCard);
-			/**
-			 * Register damages
-			 */
-			if(d.getQtyDamaged() > 0) {
-				ProductDamage damage = new ProductDamage();
-				damage.setQty(d.getQtyDamaged());
-				damage.setCostPriceVatIncl(d.getCostPriceVatIncl());
-				damage.setCostPriceVatExcl(d.getCostPriceVatExcl());
-				damage.setSellingPriceVatIncl(d.getSellingPriceVatIncl());
-				damage.setSellingPriceVatExcl(d.getCostPriceVatExcl());
-				damage.setDay(dayRepository.getCurrentBussinessDay());
-				damage.setProduct(d.getProduct());
-				damage.setReference("Damaged in packing list. Ref# "+pcl.getNo());
-				productDamageService.save(damage);
-			}
-			
-			
-			/**
-			 * Register offers
-			 */
-			if(d.getQtyOffered() > 0) {
-				ProductOffer offer = new ProductOffer();
-				offer.setQty(d.getQtyOffered());
-				offer.setCostPriceVatIncl(d.getCostPriceVatIncl());
-				offer.setCostPriceVatExcl(d.getCostPriceVatExcl());
-				offer.setSellingPriceVatIncl(d.getSellingPriceVatIncl());
-				offer.setSellingPriceVatExcl(d.getCostPriceVatExcl());
-				offer.setDay(dayRepository.getCurrentBussinessDay());
-				offer.setProduct(d.getProduct());
-				offer.setReference("Offered in packing list. Ref# "+pcl.getNo());
-				productOfferService.save(offer);
-			}
-			
-			/**
-			 * Post to sales
-			 */
-			SaleDetail sd = new SaleDetail();
-			sd.setProduct(product);
-			sd.setSale(sale);
-			sd.setQty(d.getQtySold());
-			sd.setCostPriceVatIncl(d.getCostPriceVatIncl());
-			sd.setCostPriceVatExcl(d.getCostPriceVatExcl());
-			sd.setSellingPriceVatIncl(d.getSellingPriceVatIncl());
-			sd.setSellingPriceVatExcl(d.getSellingPriceVatExcl());
-			sd.setDiscount(0);
-			sd.setTax(0);
-			saleDetailRepository.saveAndFlush(sd);
-			
-			totalPreviousReturns = totalPreviousReturns + d.getPreviousReturns() * d.getSellingPriceVatIncl();
-			totalAmountIssued = totalAmountIssued + d.getQtyIssued() * d.getSellingPriceVatIncl();
-			totalAmountPacked = totalAmountPacked + d.getTotalPacked() * d.getSellingPriceVatIncl();
-			totalSales = totalSales + d.getQtySold() * d.getSellingPriceVatIncl();
-			totalReturns = totalReturns + d.getQtyReturned() * d.getSellingPriceVatIncl();
-			totalOffered = totalOffered + d.getQtyOffered() * d.getSellingPriceVatIncl();
-			totalDamages = totalDamages + d.getQtyDamaged() * d.getSellingPriceVatIncl();
-		}
-		
-		/**
-		 * Register Deficit
-		 */
-		if(totalDeficit > 0) {
-			Debt debt = new Debt();
-			debt.setNo("NA");
-			debt.setStatus("PENDING");
-			debt.setAmount(totalDeficit);
-			debt.setBalance(totalDeficit);
-			debt.setDay(dayRepository.getCurrentBussinessDay());
-			debt.setEmployee(pcl.getEmployee());
-			debt.setPackingList(pcl);
-			debtService.create(debt);
-		}
-		
-		if(totalDiscounts < 0) {
-			throw new InvalidEntryException("Could not process, invalid discounts amount");
-		}	
-		if(totalExpenditures < 0) {
-			throw new InvalidEntryException("Could not process, invalid expenses amount");
-		}
-		if(totalBank < 0) {
-			throw new InvalidEntryException("Could not process, invalid bank amount");
-		}
-		if(totalCash < 0) {
-			throw new InvalidEntryException("Could not process, invalid cash amount");
-		}
-		if(totalDeficit < 0) {
-			throw new InvalidEntryException("Could not process, invalid deficit amount");
-		}
-		
-		if(totalSales != totalDiscounts + totalExpenditures + totalBank + totalCash + totalDeficit) {
-			throw new InvalidEntryException("Could not process, amounts do not tally ");
-		}
-		if(totalAmountPacked != totalSales +totalReturns + totalOffered + totalDamages) {
-			throw new InvalidEntryException("Could not process, amounts do not tally");
-		}
-		
-		PackingListModel model = new PackingListModel();
-		model.setId(pcl.getId());
-		model.setNo(pcl.getNo());
-		model.setCustomer(pcl.getCustomer());
-		model.setStatus(pcl.getStatus());
-		model.setIssueDate(pcl.getIssueDate());		
-		model.setComments(pcl.getComments());
-		model.setTotalPreviousReturns(totalPreviousReturns);
-		model.setTotalAmountIssued(totalAmountIssued);
-		model.setTotalAmountPacked(totalAmountPacked);
-		model.setTotalSales(totalSales);
-		model.setTotalOffered(totalOffered);
-		model.setTotalReturns(totalReturns);
-		model.setTotalDamages(totalDamages);
-		if(pcl.getCreatedAt() != null && pcl.getCreatedBy() != null) {
-			model.setCreated(dayRepository.findById(pcl.getCreatedAt()).get().getBussinessDate() +" "+ userRepository.getAlias(pcl.getCreatedBy()));
-		}
-		if(pcl.getApprovedAt() != null && pcl.getApprovedBy() != null) {
-			model.setApproved(dayRepository.findById(pcl.getApprovedAt()).get().getBussinessDate() +" "+ userRepository.getAlias(pcl.getApprovedBy()));
-		}	
-		if(pcl.getPostedAt() != null && pcl.getPostedBy() != null) {
-			model.setPosted(dayRepository.findById(pcl.getPostedAt()).get().getBussinessDate() +" "+ userRepository.getAlias(pcl.getPostedBy()));
-		}	
-		List<PackingListDetail> packingListDetails = pcl.getPackingListDetails();
-		List<PackingListDetailModel> modelDetails = new ArrayList<PackingListDetailModel>();
-		for(PackingListDetail d : packingListDetails) {
-			PackingListDetailModel detail = new PackingListDetailModel();
-			detail.setId(d.getId());
-			detail.setPreviousReturns(d.getPreviousReturns());
-			detail.setProduct(d.getProduct());
-			detail.setQtyDamaged(d.getQtyDamaged());
-			detail.setQtyIssued(d.getQtyIssued());
-			detail.setTotalPacked(d.getTotalPacked());
-			detail.setQtyOffered(d.getQtyOffered());
-			detail.setQtyReturned(d.getQtyReturned());
-			detail.setQtySold(d.getQtySold());
-			detail.setSellingPriceVatIncl(d.getSellingPriceVatIncl());
-			detail.setSellingPriceVatExcl(d.getSellingPriceVatExcl());
-			modelDetails.add(detail);
-		}
-		model.setPackingListDetails(modelDetails);
-		
-		model.setTotalPreviousReturns(totalPreviousReturns);
-		model.setTotalAmountIssued(totalAmountIssued);
-		model.setTotalAmountPacked(totalAmountPacked);
-		model.setTotalSales(totalSales);
-		model.setTotalOffered(totalOffered);
-		model.setTotalReturns(totalReturns);
-		model.setTotalDamages(totalDamages);
-		
-		model.setTotalDiscounts(totalDiscounts);
-		model.setTotalExpenditures(totalExpenditures);
-		model.setTotalBank(totalBank);
-		model.setTotalCash(totalCash);
-		model.setTotalDeficit(totalDeficit);
-		
-		return model;
-	}
-	
 	private boolean validate(PackingList packingList) {
 		return true;
 	}
@@ -811,6 +514,7 @@ public class PackingListServiceImpl implements PackingListService {
 	private String generatePackingListNo(PackingList packingList) {
 		Long number = packingList.getId();		
 		String sNumber = number.toString();
-		return "SLR-"+Formater.formatNine(sNumber);
+		return "PCL-"+Formater.formatNine(sNumber);
 	}
+	
 }

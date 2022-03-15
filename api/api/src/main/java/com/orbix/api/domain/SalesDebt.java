@@ -3,6 +3,8 @@
  */
 package com.orbix.api.domain;
 
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -18,6 +20,7 @@ import javax.validation.constraints.NotBlank;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.sun.istack.NotNull;
 
 import lombok.AllArgsConstructor;
@@ -32,8 +35,8 @@ import lombok.NoArgsConstructor;
 @Data  
 @NoArgsConstructor 
 @AllArgsConstructor
-@Table(name = "debts")
-public class Debt {
+@Table(name = "sales_debts")
+public class SalesDebt {
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -46,15 +49,18 @@ public class Debt {
 	@NotNull
 	private double balance = 0;
 	
+	private Long createdBy;
+	private Long createdAt;
+	
 	@ManyToOne(targetEntity = Employee.class, fetch = FetchType.EAGER, optional = true)
     @JoinColumn(name = "employee_id", nullable = true , updatable = true)
     @OnDelete(action = OnDeleteAction.NO_ACTION)	
     private Employee employee;
 	
-	@ManyToOne(targetEntity = Day.class, fetch = FetchType.EAGER, optional = true)
-    @JoinColumn(name = "day_id", nullable = true , updatable = false)
+	@ManyToOne(targetEntity = Customer.class, fetch = FetchType.EAGER, optional = true)
+    @JoinColumn(name = "customer_id", nullable = true , updatable = true)
     @OnDelete(action = OnDeleteAction.NO_ACTION)	
-    private Day day;
+    private Customer customer;
 	
 	@OneToOne(targetEntity = SalesList.class, fetch = FetchType.EAGER, optional = true)
     @JoinColumn(name = "sales_list_id", nullable = true , updatable = false)

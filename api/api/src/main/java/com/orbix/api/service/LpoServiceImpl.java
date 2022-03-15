@@ -283,7 +283,8 @@ public class LpoServiceImpl implements LpoService {
 	private String generateLpoNo(Lpo lpo) {
 		Long number = lpo.getId();		
 		String sNumber = number.toString();
-		return "LPO-"+Formater.formatSix(sNumber);
+		//return "LPO-"+Formater.formatSix(sNumber);
+		return Formater.formatWithCurrentDate("LPO",sNumber);
 	}
 	
 	@Override
